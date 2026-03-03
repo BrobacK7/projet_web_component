@@ -190,6 +190,7 @@ class AudioEqualizer extends HTMLElement {
           border-radius: var(--ap-radius);
           width: var(--ap-width);
           padding: 16px;
+          overflow: hidden;
           color: var(--ap-text);
           user-select: none;
         }
@@ -251,8 +252,9 @@ class AudioEqualizer extends HTMLElement {
           display: flex;
           justify-content: space-between;
           gap: 8px;
-          height: 160px;
-          align-items: flex-end;
+          height: 140px;
+          align-items: stretch;
+          overflow: hidden;
         }
 
         .band {
@@ -283,6 +285,7 @@ class AudioEqualizer extends HTMLElement {
           justify-content: center;
           position: relative;
           width: 100%;
+          overflow: hidden;
         }
 
         input[type=range].slider {
@@ -290,8 +293,10 @@ class AudioEqualizer extends HTMLElement {
           appearance: none;
           writing-mode: vertical-lr;
           direction: rtl;
-          width: 4px;
-          height: 100%;
+          width: 100px;
+          height: 4px;
+          transform: rotate(-90deg);
+          transform-origin: center center;
           background: transparent;
           cursor: pointer;
           outline: none;
