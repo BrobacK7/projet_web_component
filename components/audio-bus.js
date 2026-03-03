@@ -1,14 +1,40 @@
+/**
+ * <audio-bus> Web Component
+ *
+ * DESIGN DECISIONS:
+ * -----------------
+ * 1. ROLE UNIQUE : cree et expose le contexte audio partage. Aucune UI.
+ *
+ * 2. CHAINE MULTI-EFFETS :
+ *    connectEffect() ajoute un effet a la fin de la chaine.
+ *    Plusieurs effets peuvent coexister simultanement :
+ *    insertInput -> effet1 -> effet2 -> ... -> insertOutput
+ *
+ * 3. API publique via window.AudioBus :
+ *    .context              AudioContext partage
+ *    .masterGain           GainNode volume global
+ *    .insertInput          GainNode entree effets
+ *    .insertOutput         GainNode sortie effets
+ *    .connectEffect(in, out)   ajoute un effet dans la chaine
+ *    .disconnectEffect(in, out) retire un effet de la chaine
+ *    .bypassEffects()      retire tous les effets
+ *
+ * USAGE :
+ *   <audio-bus></audio-bus>
+ *   <audio-player src="track.mp3"></audio-player>
+ *   <audio-equalizer></audio-equalizer>
+ *   <audio-reverb></audio-reverb>
+ */
+
 class AudioBus extends HTMLElement {
 
   constructor() {
     super();
-    // Pas de Shadow DOM : ce composant n'a aucune UI
     this._initialized = false;
   }
 
   connectedCallback() {
     this._init();
-    // Resume le contexte au premier audio:play
     this._onPlay = () => {
       if (window.AudioBus && window.AudioBus.context &&
           window.AudioBus.context.state === 'suspended') {
@@ -24,8 +50,6 @@ class AudioBus extends HTMLElement {
 
   _init() {
     if (this._initialized) return;
-
-    // Ne pas ecraser un AudioBus deja complet
     if (window.AudioBus && window.AudioBus.context) {
       this._initialized = true;
       this._emit();
@@ -34,23 +58,25 @@ class AudioBus extends HTMLElement {
 
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     if (!AudioContext) {
-      console.warn('[audio-bus] Web Audio API non supportee par ce navigateur.');
+      console.warn('[audio-bus] Web Audio API non supportee.');
       return;
     }
 
     const ctx = new AudioContext();
 
-    // Points d'insertion pour effets (EQ, WAM, compresseur...)
     const insertInput  = ctx.createGain();
     const insertOutput = ctx.createGain();
     const masterGain   = ctx.createGain();
     masterGain.gain.value = 1.0;
 
-    // Connexion par defaut : bypass (sans effets)
-    // insertInput -> insertOutput -> masterGain -> destination
+    // Bypass par defaut : insertInput -> insertOutput -> masterGain -> dest
     insertInput.connect(insertOutput);
     insertOutput.connect(masterGain);
     masterGain.connect(ctx.destination);
+
+    // Registre des effets dans la chaine (ordre d insertion)
+    // Chaque entree : { inputNode, outputNode }
+    const effectChain = [];
 
     window.AudioBus = {
       context:      ctx,
@@ -61,29 +87,72 @@ class AudioBus extends HTMLElement {
       /**
        * connectEffect(inputNode, outputNode)
        *
-       * Insere un effet dans la chaine :
-       *   insertInput -> inputNode ... outputNode -> insertOutput
+       * Ajoute un effet a la fin de la chaine.
+       * Reconstruit toute la chaine proprement.
        *
-       * Deconnecte automatiquement le bypass.
-       *
-       * @param {AudioNode} inputNode  - entree de l'effet
-       * @param {AudioNode} outputNode - sortie de l'effet
+       * Avant : insertInput -> [...] -> insertOutput
+       * Apres : insertInput -> [...] -> inputNode -> outputNode -> insertOutput
        */
       connectEffect(inputNode, outputNode) {
-        insertInput.disconnect(insertOutput);
-        insertInput.connect(inputNode);
-        outputNode.connect(insertOutput);
+        // Enregistre l effet
+        effectChain.push({ inputNode, outputNode });
+        // Reconstruit la chaine
+        this._rebuildChain(effectChain, insertInput, insertOutput);
+      },
+
+      /**
+       * disconnectEffect(inputNode, outputNode)
+       *
+       * Retire un effet specifique de la chaine.
+       */
+      disconnectEffect(inputNode, outputNode) {
+        const idx = effectChain.findIndex(
+          e => e.inputNode === inputNode && e.outputNode === outputNode
+        );
+        if (idx !== -1) effectChain.splice(idx, 1);
+        this._rebuildChain(effectChain, insertInput, insertOutput);
       },
 
       /**
        * bypassEffects()
        *
-       * Retire tous les effets de la chaine,
-       * rebranche le bypass direct insertInput -> insertOutput.
+       * Retire tous les effets, rebranche le bypass direct.
        */
       bypassEffects() {
-        insertInput.disconnect();
-        insertInput.connect(insertOutput);
+        effectChain.length = 0;
+        this._rebuildChain(effectChain, insertInput, insertOutput);
+      },
+
+      /**
+       * _rebuildChain(chain, insertInput, insertOutput) — interne
+       *
+       * Deconnecte tout et reconstruit la chaine dans l ordre :
+       * insertInput -> effet[0] -> effet[1] -> ... -> insertOutput
+       *
+       * Si chaine vide : insertInput -> insertOutput (bypass)
+       */
+      _rebuildChain(chain, insertInput, insertOutput) {
+        // Deconnecte tous les noeuds de la chaine
+        try { insertInput.disconnect(); } catch(e) {}
+        chain.forEach(({ outputNode }) => {
+          try { outputNode.disconnect(insertOutput); } catch(e) {}
+          try { outputNode.disconnect(); } catch(e) {}
+        });
+
+        if (chain.length === 0) {
+          // Bypass : connexion directe
+          insertInput.connect(insertOutput);
+        } else {
+          // Branche le premier effet sur insertInput
+          insertInput.connect(chain[0].inputNode);
+          // Chaine les effets entre eux
+          for (let i = 0; i < chain.length - 1; i++) {
+            try { chain[i].outputNode.disconnect(); } catch(e) {}
+            chain[i].outputNode.connect(chain[i + 1].inputNode);
+          }
+          // Branche le dernier effet sur insertOutput
+          chain[chain.length - 1].outputNode.connect(insertOutput);
+        }
       },
     };
 
