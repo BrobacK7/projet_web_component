@@ -128,8 +128,16 @@
       ║  COMPOSANT 2 — Playlist  (à venir)                   ║
       ╚══════════════════════════════════════════════════════╝
     -->
-    <!-- <audio-playlist id="playlist"></audio-playlist> -->
-    <div class="slot-placeholder">[ audio-playlist — à venir ]</div>
+    <audio-playlist
+      id="playlist"
+      autoadvance
+      loop
+      tracks='[
+        {"src":"./assets/playlist/test1.mp3","title":"Test Track 1","artist":"Demo"},
+        {"src":"./assets/playlist/test2.mp3","title":"Test Track 2","artist":"Demo"},
+        {"src":"./assets/playlist/test3.mp3","title":"Test Track 3","artist":"Demo"}
+      ]'
+    ></audio-playlist>
 
     <!--
       ╔══════════════════════════════════════════════════════╗
