@@ -1,31 +1,222 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <title>Mini Test</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin-top: 100px;
-            background-color: #f4f4f4;
-        }
-        h1 {
-            color: #333;
-        }
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Audio Components — Demo</title>
+
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0c0c0e;
+      --surface: #111113;
+      --text: #ffffff;
+      --text-muted: #4a4a58;
+      --accent: #1db954;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', system-ui, sans-serif;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 32px;
+      padding: 40px 20px;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      text-align: center;
+    }
+    header h1 {
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 6px;
+    }
+    header p {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* ── Zone composants ── */
+    .components-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      width: 100%;
+      max-width: 800px;
+    }
+
+    /* ── Debug bus (discret, en bas) ── */
+    .debug {
+      position: fixed;
+      bottom: 16px;
+      right: 16px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: 'Courier New', monospace;
+      line-height: 1.6;
+    }
+    .debug .dot {
+      display: inline-block;
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #333;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+    .debug .dot.active { background: var(--accent); }
+
+    /* ── Slots futurs (placeholder visuels) ── */
+    .slot-placeholder {
+      width: 360px;
+      border: 1px dashed rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+    }
+  </style>
 </head>
 <body>
 
-    <h1>Page de test 🚀</h1>
-    <p>Si tu vois cette page, ton fidchier fonctionne !</p>
-    <button onclick="alert('Ça marche !')">Clique moi</button>
+  <header>
+    <h1>Audio Components</h1>
+    <p>Web Components Demo — v0.1</p>
+  </header>
+
+  <main class="components-area">
+
+    <!--
+      ╔══════════════════════════════════════════════════════╗
+      ║  COMPOSANT 1 — Lecteur audio                         ║
+      ║  Attributs : src, title, artist, autoplay, loop      ║
+      ╚══════════════════════════════════════════════════════╝
+    -->
+    <audio-player
+      id="player"
+      src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
+      title="SoundHelix Song 1"
+      artist="SoundHelix"
+    ></audio-player>
+
+    <!--
+      ╔══════════════════════════════════════════════════════╗
+      ║  COMPOSANT 2 — Playlist  (à venir)                   ║
+      ╚══════════════════════════════════════════════════════╝
+    -->
+    <!-- <audio-playlist id="playlist"></audio-playlist> -->
+    <div class="slot-placeholder">[ audio-playlist — à venir ]</div>
+
+    <!--
+      ╔══════════════════════════════════════════════════════╗
+      ║  COMPOSANT 3 — Égaliseur (à venir)                   ║
+      ╚══════════════════════════════════════════════════════╝
+    -->
+    <!-- <audio-equalizer></audio-equalizer> -->
+    <div class="slot-placeholder">[ audio-equalizer — à venir ]</div>
+
+    <!--
+      ╔══════════════════════════════════════════════════════╗
+      ║  COMPOSANT 4 — Visualiseur (à venir)                 ║
+      ╚══════════════════════════════════════════════════════╝
+    -->
+    <!-- <audio-visualizer></audio-visualizer> -->
+    <div class="slot-placeholder">[ audio-visualizer — à venir ]</div>
+
+  </main>
+
+  <!-- Debug AudioBus (retire en prod) -->
+  <div class="debug" id="debug">
+    <span class="dot" id="dotCtx"></span> AudioContext<br>
+    <span class="dot" id="dotBus"></span> AudioBus ready<br>
+    <span class="dot" id="dotPlaying"></span> Playing
+  </div>
+
+  <script>
+    /**
+     * ══════════════════════════════════════════════════
+     *  AUDIO BUS — contexte partagé entre composants
+     *
+     *  window.AudioBus est initialisé ICI, dans la page.
+     *  Les composants le lisent et s'y branchent.
+     *
+     *  Structure :
+     *  {
+     *    context       : AudioContext         — partagé
+     *    masterGain    : GainNode             — volume global
+     *    insertInput   : GainNode             — entrée chaîne effets (rempli par audio-player)
+     *    insertOutput  : GainNode             — sortie chaîne effets (rempli par audio-player)
+     *    playerSource  : MediaElementSource   — source brute (rempli par audio-player)
+     *    connectEffect : fn(in, out)          — branche un effet dans la chaîne
+     *    bypassEffects : fn()                 — bypass tous les effets
+     *  }
+     * ══════════════════════════════════════════════════
+     */
+    window.AudioBus = {
+      context:       null,   // sera créé par audio-player au premier play()
+      masterGain:    null,
+      insertInput:   null,
+      insertOutput:  null,
+      playerSource:  null,
+      connectEffect: null,
+      bypassEffects: null,
+    };
+
+    // ── Debug UI ──────────────────────────────────────
+    function dot(id, active) {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('active', active);
+    }
+
+    document.addEventListener('audiobus:ready', () => {
+      dot('dotCtx', true);
+      dot('dotBus', true);
+    });
+
+    document.addEventListener('audio:play', () => dot('dotPlaying', true));
+    document.addEventListener('audio:pause', () => dot('dotPlaying', false));
+    document.addEventListener('audio:ended', () => dot('dotPlaying', false));
+
+    // ── Exemple : écoute des events pour la future playlist ──
+    // document.addEventListener('audio:next', () => { ... });
+    // document.addEventListener('audio:prev', () => { ... });
+  </script>
+
+  <!--
+    ══════════════════════════════════════════════════════
+    IMPORT DES COMPOSANTS
+    En production : remplacer par les URLs GitHub Pages
+    ex: https://VOTRE-USERNAME.github.io/audio-components/components/audio-player.js
+
+    Pour tester en local :
+    <script type="module" src="./components/audio-player.js"></script>
+    ══════════════════════════════════════════════════════
+  -->
+  <script type="module" src="https://broback7.github.io/projet_web_component/components/audio-player.js"></script>
 
 </body>
 </html>
