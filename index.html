@@ -3,178 +3,49 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Audio Components — Demo</title>
-
-
+  <title>Audio Components</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --bg: #0c0c0e;
-      --surface: #111113;
-      --text: #ffffff;
-      --text-muted: #4a4a58;
-      --accent: #1db954;
-    }
-
-    html, body {
-      height: 100%;
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'DM Sans', system-ui, sans-serif;
-    }
-
-    body {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 32px;
-      padding: 40px 20px;
-      min-height: 100vh;
-    }
-
-    /* ── Header ── */
-    header {
-      text-align: center;
-    }
-    header h1 {
-      font-size: 13px;
-      font-weight: 500;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--accent);
-      margin-bottom: 6px;
-    }
-    header p {
-      font-size: 12px;
-      color: var(--text-muted);
-    }
-
-    /* ── Zone composants ── */
-    .components-area {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 16px;
-      width: 100%;
-      max-width: 800px;
-    }
-
-    /* ── Debug bus (discret, en bas) ── */
-    .debug {
+    html, body { height: 100%; overflow: hidden; background: #0c0c0e; }
+    .player-bar {
       position: fixed;
-      bottom: 16px;
-      right: 16px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 8px;
-      padding: 10px 14px;
-      font-size: 11px;
-      color: var(--text-muted);
-      font-family: 'Courier New', monospace;
-      line-height: 1.6;
-    }
-    .debug .dot {
-      display: inline-block;
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      background: #333;
-      margin-right: 6px;
-      vertical-align: middle;
-    }
-    .debug .dot.active { background: var(--accent); }
-
-    /* ── Slots futurs (placeholder visuels) ── */
-    .slot-placeholder {
-      width: 360px;
-      border: 1px dashed rgba(255,255,255,0.08);
-      border-radius: 12px;
+      bottom: 0; left: 0; right: 0;
+      display: flex;
+      justify-content: center;
       padding: 16px;
-      text-align: center;
-      font-size: 11px;
-      color: var(--text-muted);
-      letter-spacing: 0.05em;
+      background: linear-gradient(to top, #0c0c0e 60%, transparent);
+      z-index: 10000;
     }
   </style>
 </head>
 <body>
 
-  <header>
-    <h1>Audio Components</h1>
-    <p>Web Components Demo — v0.1</p>
-  </header>
+  <!-- Bus audio — cree le contexte partage -->
+  <audio-bus></audio-bus>
 
-  <main class="components-area">
+  <!-- Workspace — panneau lateral + fenetres flottantes -->
+  <audio-workspace id="workspace"></audio-workspace>
 
-    <audio-bus></audio-bus>
-
+  <!-- Player fixe en bas -->
+  <div class="player-bar">
     <audio-player
-    id="player"
-    src="https://broback7.github.io/projet_web_component/assets/demo/sonic.mp3"
-    title="Test Track"
-    artist="Local"
-    ></audio-player>
-
-    <audio-playlist
-      id="playlist"
-      autoadvance
-      loop
-      tracks='[
-        {"src":"./assets/playlist/test1.mp3","title":"Test Track 1","artist":"Demo"},
-        {"src":"./assets/playlist/test2.mp3","title":"Test Track 2","artist":"Demo"},
-        {"src":"./assets/playlist/test3.mp3","title":"Test Track 3","artist":"Demo"}
-      ]'
-    ></audio-playlist>
-
-    <audio-equalizer id="eq"></audio-equalizer>
-
-    <audio-visualizer id="visualizer" mode="fft" fftsize="256"></audio-visualizer>
-
-    <audio-reverb id="reverb" preset="hall"></audio-reverb>
-
-  </main>
-
-  <!-- Debug AudioBus (retire en prod) -->
-  <div class="debug" id="debug">
-    <span class="dot" id="dotCtx"></span> AudioContext<br>
-    <span class="dot" id="dotBus"></span> AudioBus ready<br>
-    <span class="dot" id="dotPlaying"></span> Playing
+      id="player"
+      src="https://broback7.github.io/projet_web_component/assets/demo/sonic.mp3"
+      title="Test Track"
+      artist="Local">
+    </audio-player>
   </div>
 
-  
-
   <script>
-
-    // ── Debug UI ──────────────────────────────────────
-    function dot(id, active) {
-      const el = document.getElementById(id);
-      if (el) el.classList.toggle('active', active);
-    }
-
-    document.addEventListener('audiobus:ready', () => {
-      dot('dotCtx', true);
-      dot('dotBus', true);
-    });
-
-    document.addEventListener('audio:play', () => dot('dotPlaying', true));
-    document.addEventListener('audio:pause', () => dot('dotPlaying', false));
-    document.addEventListener('audio:ended', () => dot('dotPlaying', false));
-
-    // Sync playlist → player : met à jour titre/artiste affichés dans le player
-    document.addEventListener('audio:external-play', (e) => {
-      const player = document.getElementById('player');
+    // Sync playlist -> player
+    document.addEventListener("audio:external-play", (e) => {
+      const player = document.getElementById("player");
       if (!player) return;
-      if (e.detail?.title)  player.setAttribute('title',  e.detail.title);
-      if (e.detail?.artist) player.setAttribute('artist', e.detail.artist);
+      if (e.detail && e.detail.title)  player.setAttribute("title",  e.detail.title);
+      if (e.detail && e.detail.artist) player.setAttribute("artist", e.detail.artist);
     });
-
-    // ── Exemple : écoute des events pour la future playlist ──
-    // document.addEventListener('audio:next', () => { ... });
-    // document.addEventListener('audio:prev', () => { ... });
   </script>
 
   <script type="module" src="https://broback7.github.io/projet_web_component/components/audio-bus.js"></script>
@@ -183,5 +54,7 @@
   <script type="module" src="https://broback7.github.io/projet_web_component/components/audio-equalizer.js"></script>
   <script type="module" src="https://broback7.github.io/projet_web_component/components/audio-visualizer.js"></script>
   <script type="module" src="https://broback7.github.io/projet_web_component/components/audio-reverb.js"></script>
+  <script type="module" src="https://broback7.github.io/projet_web_component/components/audio-workspace.js"></script>
+
 </body>
 </html>
