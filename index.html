@@ -201,6 +201,14 @@
     document.addEventListener('audio:pause', () => dot('dotPlaying', false));
     document.addEventListener('audio:ended', () => dot('dotPlaying', false));
 
+    // Sync playlist → player : met à jour titre/artiste affichés dans le player
+    document.addEventListener('audio:external-play', (e) => {
+      const player = document.getElementById('player');
+      if (!player) return;
+      if (e.detail?.title)  player.setAttribute('title',  e.detail.title);
+      if (e.detail?.artist) player.setAttribute('artist', e.detail.artist);
+    });
+
     // ── Exemple : écoute des events pour la future playlist ──
     // document.addEventListener('audio:next', () => { ... });
     // document.addEventListener('audio:prev', () => { ... });
