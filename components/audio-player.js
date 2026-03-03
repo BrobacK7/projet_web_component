@@ -62,58 +62,52 @@ class AudioPlayer extends HTMLElement {
   }
 
   _initAudio() {
-    if (this._context) return; // déjà initialisé
+    if (this._context) return;
 
-    // Utilise le contexte du bus si present, sinon crée le sien (fallback)
-    if (window.AudioBus?.context) {
-        this._context = window.AudioBus.context;
+    const bus = window.AudioBus;
+
+    if (bus && bus.context && bus.insertInput && bus.masterGain) {
+        // MODE BUS : audio-bus.js a tout créé, on se branche dessus
+        this._context    = bus.context;
+        this._masterGain = bus.masterGain;
+        this._sourceNode = this._context.createMediaElementSource(this._audio);
+        this._sourceNode.connect(bus.insertInput);
+
     } else {
+        // MODE FALLBACK : pas d'audio-bus, crée le propre contexte
         this._context = new (window.AudioContext || window.webkitAudioContext)();
-    }
-
-    // Source depuis l'élément audio HTML
-    this._sourceNode = this._context.createMediaElementSource(this._audio);
-
-    this._insertInput = this._context.createGain();
-    this._insertOutput = this._context.createGain();
-
-    this._masterGain = this._context.createGain();
-    this._masterGain.gain.value = this._volume;
-
-    this._sourceNode.connect(this._insertInput);
-    this._insertInput.connect(this._insertOutput);  // bypass par défaut
-    this._insertOutput.connect(this._masterGain);
-    this._masterGain.connect(this._context.destination);
-
-    // Expose sur AudioBus si présent
-    if (window.AudioBus) {
-      window.AudioBus.context       = this._context;
-      window.AudioBus.masterGain    = this._masterGain;
-      window.AudioBus.insertInput   = this._insertInput;
-      window.AudioBus.insertOutput  = this._insertOutput;
-      window.AudioBus.playerSource  = this._sourceNode;
-
-      window.AudioBus.connectEffect = (inputNode, outputNode) => {
-        this._insertInput.disconnect(this._insertOutput);
-        this._insertInput.connect(inputNode);
-        outputNode.connect(this._insertOutput);
-      };
-
-      /**
-       * AudioBus.bypassEffects() — retire tous les effets, rebranche le bypass
-       */
-      window.AudioBus.bypassEffects = () => {
-        this._insertInput.disconnect();
+        this._insertInput  = this._context.createGain();
+        this._insertOutput = this._context.createGain();
+        this._masterGain   = this._context.createGain();
+        this._masterGain.gain.value = this._volume;
+        this._sourceNode = this._context.createMediaElementSource(this._audio);
+        this._sourceNode.connect(this._insertInput);
         this._insertInput.connect(this._insertOutput);
-      };
+        this._insertOutput.connect(this._masterGain);
+        this._masterGain.connect(this._context.destination);
 
-      // Signal que le bus audio est prêt
-      document.dispatchEvent(new CustomEvent('audiobus:ready', {
-        detail: { bus: window.AudioBus },
-        bubbles: true
-      }));
+        if (window.AudioBus) {
+        window.AudioBus.context      = this._context;
+        window.AudioBus.masterGain   = this._masterGain;
+        window.AudioBus.insertInput  = this._insertInput;
+        window.AudioBus.insertOutput = this._insertOutput;
+        window.AudioBus.connectEffect = (inNode, outNode) => {
+            this._insertInput.disconnect(this._insertOutput);
+            this._insertInput.connect(inNode);
+            outNode.connect(this._insertOutput);
+        };
+        window.AudioBus.bypassEffects = () => {
+            this._insertInput.disconnect();
+            this._insertInput.connect(this._insertOutput);
+        };
+        document.dispatchEvent(new CustomEvent('audiobus:ready', {
+            detail: { bus: window.AudioBus }, bubbles: true
+        }));
+        }
     }
-  }
+
+    if (this._context.state === 'suspended') this._context.resume();
+    }
 
   // ─── Chargement ───────────────────────────────────────────────────────────
 
