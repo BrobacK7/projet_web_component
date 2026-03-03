@@ -110,12 +110,6 @@
 
   <main class="components-area">
 
-    <!--
-      ╔══════════════════════════════════════════════════════╗
-      ║  COMPOSANT 1 — Lecteur audio                         ║
-      ║  Attributs : src, title, artist, autoplay, loop      ║
-      ╚══════════════════════════════════════════════════════╝
-    -->
     <audio-player
     id="player"
     src="https://broback7.github.io/projet_web_component/assets/demo/sonic.mp3"
@@ -123,11 +117,6 @@
     artist="Local"
     ></audio-player>
 
-    <!--
-      ╔══════════════════════════════════════════════════════╗
-      ║  COMPOSANT 2 — Playlist  (à venir)                   ║
-      ╚══════════════════════════════════════════════════════╝
-    -->
     <audio-playlist
       id="playlist"
       autoadvance
@@ -139,19 +128,8 @@
       ]'
     ></audio-playlist>
 
-    <!--
-      ╔══════════════════════════════════════════════════════╗
-      ║  COMPOSANT 3 — Égaliseur                             ║
-      ╚══════════════════════════════════════════════════════╝
-    -->
-
     <audio-equalizer id="eq"></audio-equalizer>
 
-    <!--
-      ╔══════════════════════════════════════════════════════╗
-      ║  COMPOSANT 4 — Visualiseur (à venir)                 ║
-      ╚══════════════════════════════════════════════════════╝
-    -->
     <audio-visualizer id="visualizer" mode="fft" fftsize="256"></audio-visualizer>
 
   </main>
@@ -163,27 +141,9 @@
     <span class="dot" id="dotPlaying"></span> Playing
   </div>
 
+  <audio-bus></audio-bus>
+
   <script>
-    /**
-     * ══════════════════════════════════════════════════
-     *  AUDIO BUS — contexte partagé entre composants
-     *
-     *  window.AudioBus est initialisé ICI, dans la page.
-     *  Les composants le lisent et s'y branchent.
-     *
-     *  Structure :
-     *  {
-     *    context       : AudioContext         — partagé
-     *    masterGain    : GainNode             — volume global
-     *    insertInput   : GainNode             — entrée chaîne effets (rempli par audio-player)
-     *    insertOutput  : GainNode             — sortie chaîne effets (rempli par audio-player)
-     *    playerSource  : MediaElementSource   — source brute (rempli par audio-player)
-     *    connectEffect : fn(in, out)          — branche un effet dans la chaîne
-     *    bypassEffects : fn()                 — bypass tous les effets
-     *  }
-     * ══════════════════════════════════════════════════
-     */
-    <audio-bus></audio-bus>
 
     // ── Debug UI ──────────────────────────────────────
     function dot(id, active) {
@@ -212,21 +172,12 @@
     // document.addEventListener('audio:next', () => { ... });
     // document.addEventListener('audio:prev', () => { ... });
   </script>
-
-  <!--
-    ══════════════════════════════════════════════════════
-    IMPORT DES COMPOSANTS
-    En production : remplacer par les URLs GitHub Pages
-    ex: https://VOTRE-USERNAME.github.io/audio-components/components/audio-player.js
-
-    Pour tester en local :
-    <script type="module" src="./components/audio-player.js"></script>
-    ══════════════════════════════════════════════════════
-  -->
+  
+  <script type="module" src="https://broback7.github.io/projet_web_component/components/audio-bus.js"></script>
   <script type="module" src="https://broback7.github.io/projet_web_component/components/audio-player.js"></script>
   <script type="module" src="https://broback7.github.io/projet_web_component/components/audio-playlist.js"></script>
   <script type="module" src="https://broback7.github.io/projet_web_component/components/audio-equalizer.js"></script>
   <script type="module" src="https://broback7.github.io/projet_web_component/components/audio-visualizer.js"></script>
-  <script type="module" src="https://broback7.github.io/projet_web_component/components/audio-bus.js"></script>
+  <script type="module" src="https://broback7.github.io/projet_web_component/components/audio-visualizer.js"></script>
 </body>
 </html>
