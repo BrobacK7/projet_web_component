@@ -183,15 +183,7 @@
      *  }
      * ══════════════════════════════════════════════════
      */
-    window.AudioBus = {
-      context:       null,   // sera créé par audio-player au premier play()
-      masterGain:    null,
-      insertInput:   null,
-      insertOutput:  null,
-      playerSource:  null,
-      connectEffect: null,
-      bypassEffects: null,
-    };
+    <audio-bus></audio-bus>
 
     // ── Debug UI ──────────────────────────────────────
     function dot(id, active) {
@@ -235,5 +227,6 @@
   <script type="module" src="https://broback7.github.io/projet_web_component/components/audio-playlist.js"></script>
   <script type="module" src="https://broback7.github.io/projet_web_component/components/audio-equalizer.js"></script>
   <script type="module" src="https://broback7.github.io/projet_web_component/components/audio-visualizer.js"></script>
+  <script type="module" src="https://broback7.github.io/projet_web_component/components/audio-bus.js"></script>
 </body>
 </html>

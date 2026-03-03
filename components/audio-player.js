@@ -61,43 +61,25 @@ class AudioPlayer extends HTMLElement {
     }
   }
 
-  // ─── Initialisation WebAudio ──────────────────────────────────────────────
-
-  /**
-   * Initialise le graphe audio.
-   * Appelé au premier play() pour respecter la politique autoplay des navigateurs.
-   *
-   * Graphe :
-   *   <audio> → MediaElementSource
-   *           → insertInput (GainNode)
-   *           → [ZONE D'INSERTION — EQ, effets se branchent ici]
-   *           → insertOutput (GainNode)
-   *           → masterGain
-   *           → destination
-   */
   _initAudio() {
     if (this._context) return; // déjà initialisé
 
-    // Utilise le contexte partagé si disponible, sinon crée le sien
-    if (window.AudioBus && window.AudioBus.context) {
-      this._context = window.AudioBus.context;
+    // Utilise le contexte du bus si present, sinon crée le sien (fallback)
+    if (window.AudioBus?.context) {
+        this._context = window.AudioBus.context;
     } else {
-      this._context = new (window.AudioContext || window.webkitAudioContext)();
+        this._context = new (window.AudioContext || window.webkitAudioContext)();
     }
 
     // Source depuis l'élément audio HTML
     this._sourceNode = this._context.createMediaElementSource(this._audio);
 
-    // Points d'insertion pour effets futurs (EQ, compresseur, WAM...)
     this._insertInput = this._context.createGain();
     this._insertOutput = this._context.createGain();
 
-    // Gain master (volume)
     this._masterGain = this._context.createGain();
     this._masterGain.gain.value = this._volume;
 
-    // Connexion par défaut : source → insertInput → insertOutput → masterGain → out
-    // Quand un effet est branché, il coupe ce lien et s'insère entre les deux points
     this._sourceNode.connect(this._insertInput);
     this._insertInput.connect(this._insertOutput);  // bypass par défaut
     this._insertOutput.connect(this._masterGain);
@@ -111,13 +93,6 @@ class AudioPlayer extends HTMLElement {
       window.AudioBus.insertOutput  = this._insertOutput;
       window.AudioBus.playerSource  = this._sourceNode;
 
-      /**
-       * AudioBus.connectEffect(effectNode) — API pour les futurs composants
-       *
-       * Insère un noeud WebAudio dans la chaîne :
-       *   insertInput → effectNode → insertOutput
-       * Déconnecte le bypass (insertInput → insertOutput) automatiquement.
-       */
       window.AudioBus.connectEffect = (inputNode, outputNode) => {
         this._insertInput.disconnect(this._insertOutput);
         this._insertInput.connect(inputNode);
