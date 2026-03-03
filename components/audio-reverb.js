@@ -1,38 +1,3 @@
-/**
- * <audio-reverb> Web Component
- *
- * DESIGN DECISIONS:
- * -----------------
- * 1. AUTONOMIE : Se branche sur AudioBus si present, sinon attend audiobus:ready.
- *
- * 2. GRAPHE AUDIO :
- *    S insere dans la chaine via AudioBus.connectEffect() :
- *    insertInput -> [dryGain / convolver -> wetGain] -> insertOutput
- *    Le mix dry/wet est gere en interne via deux GainNodes en parallele.
- *
- * 3. IMPLEMENTATION :
- *    Impulse Response (IR) synthetisee algorithmiquement en JS pur.
- *    Zero fichier externe. Chaque preset genere un buffer AudioContext
- *    avec des parametres differents (decay, diffusion, pre-delay).
- *
- * 4. PRESETS :
- *    - room   : petite piece, decay court, diffusion moyenne
- *    - hall   : grande salle, decay long, haute diffusion
- *    - cave   : grotte, decay tres long, resonance prononcee
- *    - spring : reverb a ressort vintage, decay moyen, caractere metallique
- *
- * 5. ATTRIBUTS HTML :
- *    preset  -> "room" | "hall" | "cave" | "spring" (defaut: "room")
- *    bypass  -> booleen, court-circuite la reverb
- *    wet     -> 0.0 a 1.0, niveau du signal avec reverb (defaut: 0.5)
- *
- * 6. COMMUNICATION :
- *    Ecoute audiobus:ready pour se connecter.
- *    Pas d evenements emis.
- *
- * USAGE :
- *   <audio-reverb preset="hall" wet="0.4"></audio-reverb>
- */
 
 class AudioReverb extends HTMLElement {
 
@@ -75,9 +40,10 @@ class AudioReverb extends HTMLElement {
 
   disconnectedCallback() {
     document.removeEventListener('audiobus:ready', this._onBusReady);
-    if (this._ready && window.AudioBus && window.AudioBus.bypassEffects) {
-      window.AudioBus.bypassEffects();
+    if (this._ready && window.AudioBus && window.AudioBus.disconnectEffect) {
+      window.AudioBus.disconnectEffect(this._filters[0], this._filters[this._filters.length - 1]);
     }
+    this._filters = [];
     this._ready = false;
   }
 
