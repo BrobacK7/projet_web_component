@@ -9,15 +9,6 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { height: 100%; overflow: hidden; background: #0c0c0e; }
-    .player-bar {
-      position: fixed;
-      bottom: 0; left: 0; right: 0;
-      display: flex;
-      justify-content: center;
-      padding: 16px;
-      background: linear-gradient(to top, #0c0c0e 60%, transparent);
-      z-index: 10000;
-    }
   </style>
 </head>
 <body>
@@ -28,20 +19,10 @@
   <!-- Workspace — panneau lateral + fenetres flottantes -->
   <audio-workspace id="workspace"></audio-workspace>
 
-  <!-- Player fixe en bas -->
-  <div class="player-bar">
-    <audio-player
-      id="player"
-      src="https://broback7.github.io/projet_web_component/assets/demo/sonic.mp3"
-      title="Test Track"
-      artist="Local">
-    </audio-player>
-  </div>
-
   <script>
-    // Sync playlist -> player
+    // Sync playlist -> player (find any audio-player in the document)
     document.addEventListener("audio:external-play", (e) => {
-      const player = document.getElementById("player");
+      const player = document.querySelector("audio-player");
       if (!player) return;
       if (e.detail && e.detail.title)  player.setAttribute("title",  e.detail.title);
       if (e.detail && e.detail.artist) player.setAttribute("artist", e.detail.artist);
@@ -54,6 +35,8 @@
   <script type="module" src="https://broback7.github.io/projet_web_component/components/audio-equalizer.js"></script>
   <script type="module" src="https://broback7.github.io/projet_web_component/components/audio-visualizer.js"></script>
   <script type="module" src="https://broback7.github.io/projet_web_component/components/audio-reverb.js"></script>
+  <script type="module" src="https://broback7.github.io/projet_web_component/components/audio-wam-effect.js"></script>
+  <script type="module" src="https://broback7.github.io/projet_web_component/components/audio-bus-diagram.js"></script>
   <script type="module" src="https://broback7.github.io/projet_web_component/components/audio-workspace.js"></script>
 
 </body>

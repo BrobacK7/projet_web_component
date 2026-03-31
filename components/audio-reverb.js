@@ -40,10 +40,15 @@ class AudioReverb extends HTMLElement {
 
   disconnectedCallback() {
     document.removeEventListener('audiobus:ready', this._onBusReady);
-    if (this._ready && window.AudioBus && window.AudioBus.disconnectEffect) {
-      window.AudioBus.disconnectEffect(this._filters[0], this._filters[this._filters.length - 1]);
+    if (this._ready && window.AudioBus && window.AudioBus.disconnectEffect && this._inputNode && this._outputNode) {
+      window.AudioBus.disconnectEffect(this._inputNode, this._outputNode);
     }
-    this._filters = [];
+    this._inputNode = null;
+    this._outputNode = null;
+    this._convolver = null;
+    this._dryGain = null;
+    this._wetGain = null;
+    this._context = null;
     this._ready = false;
   }
 

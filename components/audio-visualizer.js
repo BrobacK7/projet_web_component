@@ -5,11 +5,11 @@
  * 1. AUTONOMIE : Se branche sur AudioBus si present, sinon attend audiobus:ready.
  * 2. GRAPHE AUDIO : Tap lecture seule sur masterGain -> AnalyserNode.
  *    N'altere pas le son, pas dans la chaine de traitement.
- * 3. MODES : fft (barres frequences) | waveform (oscilloscope)
- *    Switching via onglets. Attribut mode='fft'|'waveform'
+ * 3. MODES : fft (barres frequences) | waveform (oscilloscope) | volume (VU)
+ *    Switching via onglets. Attribut mode='fft'|'waveform'|'volume'
  * 4. COMMUNICATION :
  *    Ecoute -> audiobus:ready, audio:play, audio:pause, audio:ended
- * 5. ATTRIBUTS : mode='fft'|'waveform', fftsize=256
+ * 5. ATTRIBUTS : mode='fft'|'waveform'|'volume', fftsize=256
  * USAGE : <audio-visualizer mode="fft" fftsize="256"></audio-visualizer>
  */
 
@@ -25,6 +25,7 @@ class AudioVisualizer extends HTMLElement {
     this._isPlaying = false;
     this._mode      = 'fft';
     this._fftSize   = 256;
+    this._volumeSmooth = 0;
     this._ready     = false;
     this._drawLoop  = this._drawLoop.bind(this);
   }
@@ -101,7 +102,9 @@ class AudioVisualizer extends HTMLElement {
   _drawLoop() {
     if (!this._isPlaying || !this._analyser) return;
     this._rafId = requestAnimationFrame(this._drawLoop);
-    this._mode === 'fft' ? this._drawFFT() : this._drawWaveform();
+    if (this._mode === 'fft') this._drawFFT();
+    else if (this._mode === 'waveform') this._drawWaveform();
+    else this._drawVolume();
   }
 
   _drawFFT() {
@@ -165,6 +168,84 @@ class AudioVisualizer extends HTMLElement {
     ctx.stroke();
   }
 
+  _drawVolume() {
+    const canvas = this.shadowRoot.getElementById('canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+
+    this._analyser.getByteTimeDomainData(this._dataArray);
+
+    let sumSq = 0;
+    let peak = 0;
+    for (let i = 0; i < this._dataArray.length; i++) {
+      const centered = (this._dataArray[i] - 128) / 128;
+      const abs = Math.abs(centered);
+      sumSq += centered * centered;
+      if (abs > peak) peak = abs;
+    }
+
+    const rms = Math.sqrt(sumSq / this._dataArray.length);
+    const level = Math.min(1, rms * 2.2);
+    const peakLevel = Math.min(1, peak);
+
+    this._volumeSmooth = this._volumeSmooth * 0.78 + level * 0.22;
+
+    ctx.clearRect(0, 0, W, H);
+
+    // Grille discrete en fond pour rendre la dynamique lisible
+    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+    ctx.lineWidth = 1;
+    for (let i = 1; i < 10; i++) {
+      const x = (W / 10) * i;
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, H);
+      ctx.stroke();
+    }
+
+    const meterX = 14;
+    const meterW = W - 28;
+    const rmsY = 22;
+    const peakY = 62;
+    const barH = 16;
+
+    const bg = 'rgba(255,255,255,0.08)';
+    ctx.fillStyle = bg;
+    if (ctx.roundRect) {
+      ctx.beginPath();
+      ctx.roundRect(meterX, rmsY, meterW, barH, 8);
+      ctx.roundRect(meterX, peakY, meterW, barH, 8);
+      ctx.fill();
+    } else {
+      ctx.fillRect(meterX, rmsY, meterW, barH);
+      ctx.fillRect(meterX, peakY, meterW, barH);
+    }
+
+    const grad = ctx.createLinearGradient(meterX, 0, meterX + meterW, 0);
+    grad.addColorStop(0.0, '#1db954');
+    grad.addColorStop(0.7, '#f3c84b');
+    grad.addColorStop(1.0, '#ff4d4d');
+    ctx.fillStyle = grad;
+
+    const rmsW = Math.max(0, meterW * this._volumeSmooth);
+    const peakW = Math.max(0, meterW * peakLevel);
+    if (ctx.roundRect) {
+      ctx.beginPath();
+      ctx.roundRect(meterX, rmsY, rmsW, barH, 8);
+      ctx.roundRect(meterX, peakY, peakW, barH, 8);
+      ctx.fill();
+    } else {
+      ctx.fillRect(meterX, rmsY, rmsW, barH);
+      ctx.fillRect(meterX, peakY, peakW, barH);
+    }
+
+    ctx.fillStyle = 'rgba(255,255,255,0.65)';
+    ctx.font = '10px sans-serif';
+    ctx.fillText('RMS', meterX, rmsY - 6);
+    ctx.fillText('PEAK', meterX, peakY - 6);
+  }
+
   _resetCanvas() {
     const canvas = this.shadowRoot.getElementById('canvas');
     if (!canvas) return;
@@ -180,6 +261,10 @@ class AudioVisualizer extends HTMLElement {
       ctx.moveTo(0, canvas.height / 2);
       ctx.lineTo(canvas.width, canvas.height / 2);
       ctx.stroke();
+    } else if (this._mode === 'volume') {
+      ctx.fillStyle = 'rgba(255,255,255,0.18)';
+      ctx.font = '11px sans-serif';
+      ctx.fillText('Niveau: 0%', 14, 20);
     }
   }
 
@@ -211,6 +296,7 @@ class AudioVisualizer extends HTMLElement {
   _render() {
     const fftActive  = this._mode === 'fft'      ? ' active' : '';
     const waveActive = this._mode === 'waveform' ? ' active' : '';
+    const volActive  = this._mode === 'volume'   ? ' active' : '';
     const css = [
       ':host {',
       '  --ap-bg: #111113; --ap-surface2: #242429;',
@@ -238,6 +324,7 @@ class AudioVisualizer extends HTMLElement {
       + '<div class="tabs">'
       + '<button class="tab' + fftActive  + '" data-mode="fft">FFT</button>'
       + '<button class="tab' + waveActive + '" data-mode="waveform">Wave</button>'
+      + '<button class="tab' + volActive + '" data-mode="volume">Vol</button>'
       + '</div></div>'
       + '<div class="canvas-wrap">'
       + '<canvas id="canvas"></canvas>'

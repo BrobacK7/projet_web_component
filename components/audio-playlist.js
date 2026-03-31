@@ -151,15 +151,13 @@ class AudioPlaylist extends HTMLElement {
 
   _bindExternalEvents() {
     this._onEnded = () => {
-      if (!this.hasAttribute('autoadvance') && this.getAttribute('autoadvance') !== 'false') {
-        this._playNext();
-      } else if (this.hasAttribute('autoadvance')) {
+      // autoadvance est actif par defaut. Si present avec "false", il est desactive.
+      const attr = this.getAttribute('autoadvance');
+      const autoadvanceEnabled = attr === null ? true : attr !== 'false';
+      if (autoadvanceEnabled) {
         this._playNext();
       }
     };
-
-    // autoadvance est true par défaut
-    this._onEnded = () => this._playNext();
 
     this._onPlay = (e) => {
       // Sync si le player a changé de src sans passer par la playlist

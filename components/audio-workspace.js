@@ -6,9 +6,12 @@
 class AudioWorkspace extends HTMLElement {
   static get DEFAULT_MODULES() {
     return [
+      { tag: 'audio-player',     label: 'Player',     icon: 'PLY', attrs: { src: 'https://broback7.github.io/projet_web_component/assets/demo/sonic.mp3', title: 'Test Track', artist: 'Local' } },
+      { tag: 'audio-bus-diagram', label: 'Bus Graph',  icon: 'BUS' },
       { tag: 'audio-equalizer',  label: 'Equalizer',  icon: 'EQ' },
       { tag: 'audio-visualizer', label: 'Visualizer', icon: 'VIZ', attrs: { mode: 'fft', fftsize: '256' } },
       { tag: 'audio-reverb',     label: 'Reverb',     icon: 'REV' },
+      { tag: 'audio-wam-effect', label: 'WAM Effect', icon: 'WAM', attrs: { mix: '1' } },
       { tag: 'audio-playlist',   label: 'Playlist',   icon: 'PL'  },
     ];
   }
@@ -19,13 +22,25 @@ class AudioWorkspace extends HTMLElement {
     this._modules  = AudioWorkspace.DEFAULT_MODULES;
     this._nextId   = 0;
     this._canvas   = null;
+    this._svg      = null;
+    this._audioFlowPath = null;
   }
   connectedCallback() {
     if (this.hasAttribute('modules')) {
-      try { this._modules = JSON.parse(this.getAttribute('modules')); } catch(e) {}
+      try { this._modules = JSON.parse(this.getAttribute('modules')); } catch(e) { console.error("Failed to parse modules:", e); }
     }
     this._injectStyles();
     this._render();
+    // Spawn player by default (visible at startup)
+    setTimeout(() => {
+      const playerMod = this._modules.find(m => m.tag === 'audio-player');
+      if (playerMod) {
+        console.log("Spawning player module:", playerMod);
+        this._spawnWindow(playerMod);
+      } else {
+        console.warn("Player module not found in:", this._modules);
+      }
+    }, 100);
   }
   _injectStyles() {
     if (document.getElementById('audio-workspace-styles')) return;
@@ -33,19 +48,22 @@ class AudioWorkspace extends HTMLElement {
     s.id = 'audio-workspace-styles';
     const r = [];
     r.push("audio-workspace{display:flex;width:100%;height:100vh;overflow:hidden;background:#0c0c0e;font-family:sans-serif;position:relative;}");
-    r.push(".aw-sidebar{width:200px;flex-shrink:0;background:#111113;border-right:1px solid rgba(255,255,255,0.06);display:flex;flex-direction:column;z-index:9999;user-select:none;}");
+    r.push(".aw-sidebar{width:200px;flex-shrink:0;background:#111113;border-right:1px solid rgba(255,255,255,0.06);display:flex;flex-direction:column;z-index:9999;user-select:none;overflow-y:auto;}");
     r.push(".aw-sidebar-header{padding:16px;border-bottom:1px solid rgba(255,255,255,0.06);}");
     r.push(".aw-sidebar-title{font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#4a4a58;}");
     r.push(".aw-module-btn{display:flex;align-items:center;gap:10px;padding:10px 16px;cursor:pointer;color:#6b6b7a;font-size:13px;border:none;background:none;width:100%;text-align:left;transition:color .15s,background .15s;font-family:inherit;}");
     r.push(".aw-module-btn:hover{color:#fff;background:rgba(255,255,255,0.04);}");
-    r.push(".aw-badge{font-size:9px;font-weight:700;background:#1a1a1f;border:1px solid rgba(255,255,255,0.08);border-radius:4px;padding:2px 5px;letter-spacing:0.04em;flex-shrink:0;color:#9a9aaa;}");
+    r.push(".aw-badge{font-size:8px;font-weight:700;background:#1a1a1f;border:1px solid rgba(255,255,255,0.08);border-radius:4px;padding:2px 5px;letter-spacing:0.04em;flex-shrink:0;color:#9a9aaa;min-width:30px;text-align:center;}");
     r.push(".aw-canvas{flex:1;position:relative;overflow:hidden;}");
-    r.push(".aw-window{position:absolute;min-width:200px;min-height:100px;background:#111113;border:1px solid rgba(255,255,255,0.1);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 8px 32px rgba(0,0,0,0.4);}");
+    r.push(".aw-svg-overlay{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:50;}");
+    r.push("@keyframes audioFlow{0%{stroke-dashoffset:100;}100%{stroke-dashoffset:0;}}");
+    r.push(".aw-audio-flow{animation:audioFlow 3s linear infinite;}");
+    r.push(".aw-window{position:absolute;min-width:200px;min-height:100px;background:#111113;border:1px solid rgba(255,255,255,0.1);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 8px 32px rgba(0,0,0,0.4);z-index:100;}");
     r.push(".aw-window.focused{border-color:rgba(255,255,255,0.2);box-shadow:0 16px 56px rgba(0,0,0,0.7);}");
     r.push(".aw-titlebar{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:#1a1a1f;border-bottom:1px solid rgba(255,255,255,0.05);cursor:grab;user-select:none;flex-shrink:0;}");
     r.push(".aw-titlebar:active{cursor:grabbing;}");
     r.push(".aw-titlebar-left{display:flex;align-items:center;gap:8px;}");
-    r.push(".aw-titlebar-icon{font-size:9px;font-weight:700;background:#242429;border-radius:4px;padding:2px 5px;color:#6b6b7a;letter-spacing:0.04em;}");
+    r.push(".aw-titlebar-icon{font-size:8px;font-weight:700;background:#242429;border-radius:4px;padding:2px 5px;color:#6b6b7a;letter-spacing:0.04em;}");
     r.push(".aw-titlebar-label{font-size:11px;font-weight:600;color:#9a9aaa;letter-spacing:0.05em;}");
     r.push(".aw-close-btn{width:14px;height:14px;border-radius:50%;background:#3a3a3f;border:none;cursor:pointer;color:transparent;font-size:8px;transition:background .15s,color .15s;padding:0;line-height:14px;text-align:center;display:block;}");
     r.push(".aw-close-btn:hover{background:#ff5f56;color:rgba(0,0,0,0.8);}");
@@ -67,16 +85,78 @@ class AudioWorkspace extends HTMLElement {
     hdr.className = 'aw-sidebar-header';
     hdr.innerHTML = "<div class=\"aw-sidebar-title\">Modules</div>";
     sidebar.appendChild(hdr);
+    console.log("Rendering sidebar with modules:", this._modules);
     this._modules.forEach(mod => {
       const btn = document.createElement('button');
       btn.className = 'aw-module-btn';
-      btn.innerHTML = "<span class=\"aw-badge\">" + mod.icon + "</span><span>" + mod.label + "</span>";
-      btn.addEventListener('click', () => this._spawnWindow(mod));
+      btn.innerHTML = "<span class=\"aw-badge\">" + (mod.icon || '?') + "</span><span>" + (mod.label || 'Unknown') + "</span>";
+      btn.addEventListener('click', () => {
+        console.log("Clicked module:", mod);
+        this._spawnWindow(mod);
+      });
       sidebar.appendChild(btn);
     });
     const canvas = document.createElement('div');
     canvas.className = 'aw-canvas';
     this._canvas = canvas;
+    
+    // Create SVG overlay for audio flow visualization
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.className = 'aw-svg-overlay';
+    svg.setAttribute('viewBox', '0 0 1000 600');
+    svg.setAttribute('preserveAspectRatio', 'none');
+    this._svg = svg;
+    
+    // Add defs for gradient
+    const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+    const gradient = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
+    gradient.setAttribute('id', 'yellowGlow');
+    gradient.setAttribute('x1', '0%');
+    gradient.setAttribute('y1', '0%');
+    gradient.setAttribute('x2', '100%');
+    gradient.setAttribute('y2', '100%');
+    const stop1 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+    stop1.setAttribute('offset', '0%');
+    stop1.setAttribute('stop-color', '#ffff00');
+    stop1.setAttribute('stop-opacity', '0.8');
+    const stop2 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+    stop2.setAttribute('offset', '100%');
+    stop2.setAttribute('stop-color', '#ffcc00');
+    stop2.setAttribute('stop-opacity', '0.4');
+    gradient.appendChild(stop1);
+    gradient.appendChild(stop2);
+    defs.appendChild(gradient);
+    svg.appendChild(defs);
+    
+    // Draw audio flow path with animation
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', 'M 100 300 Q 250 200 400 300 Q 550 400 700 300 Q 850 200 950 300');
+    path.setAttribute('stroke', 'url(#yellowGlow)');
+    path.setAttribute('stroke-width', '6');
+    path.setAttribute('fill', 'none');
+    path.setAttribute('stroke-linecap', 'round');
+    path.setAttribute('stroke-linejoin', 'round');
+    path.setAttribute('filter', 'drop-shadow(0 0 4px #ffff00)');
+    path.setAttribute('stroke-dasharray', '100');
+    path.setAttribute('stroke-dashoffset', '0');
+    path.classList.add('aw-audio-flow');
+    this._audioFlowPath = path;
+    svg.appendChild(path);
+    
+    // Add labels and arrows
+    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    text.setAttribute('x', '50%');
+    text.setAttribute('y', '150');
+    text.setAttribute('text-anchor', 'middle');
+    text.setAttribute('fill', '#ffff00');
+    text.setAttribute('font-size', '14');
+    text.setAttribute('font-weight', 'bold');
+    text.setAttribute('opacity', '0.6');
+    text.textContent = 'Flux Audio du Bus';
+    svg.appendChild(text);
+    
+    canvas.appendChild(svg);
+    
     const hint = document.createElement('div');
     hint.className = 'aw-empty-hint';
     hint.id = 'aw-hint';

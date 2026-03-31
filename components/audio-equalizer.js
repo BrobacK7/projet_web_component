@@ -117,7 +117,9 @@ class AudioEqualizer extends HTMLElement {
   _disconnect() {
     if (!this._ready) return;
     const bus = window.AudioBus;
-    if (bus?.bypassEffects) bus.bypassEffects();
+    if (bus?.disconnectEffect && this._filters.length) {
+      bus.disconnectEffect(this._filters[0], this._filters[this._filters.length - 1]);
+    }
     this._filters = [];
     this._ready   = false;
   }
@@ -135,10 +137,9 @@ class AudioEqualizer extends HTMLElement {
   _applyBypass() {
     if (!this._ready) return;
     const bypass = this.hasAttribute('bypass');
-    this._filters.forEach(f => {
-      f.gain.setTargetAtTime(bypass ? 0 : this._gains[AudioEqualizer.BANDS.indexOf(
-        AudioEqualizer.BANDS.find(b => b.freq === f.frequency.value)
-      )] ?? 0, window.AudioBus.context.currentTime, 0.01);
+    this._filters.forEach((f, i) => {
+      const target = bypass ? 0 : (this._gains[i] ?? 0);
+      f.gain.setTargetAtTime(target, window.AudioBus.context.currentTime, 0.01);
     });
     this._updateBypassBtn();
   }
