@@ -32,15 +32,15 @@ class AudioWorkspace extends HTMLElement {
     this._injectStyles();
     this._render();
     // Spawn player by default (visible at startup)
-    setTimeout(() => {
+    // Wait for audio-player custom element to be defined before spawning
+    customElements.whenDefined('audio-player').then(() => {
       const playerMod = this._modules.find(m => m.tag === 'audio-player');
       if (playerMod) {
-        console.log("Spawning player module:", playerMod);
         this._spawnWindow(playerMod);
       } else {
         console.warn("Player module not found in:", this._modules);
       }
-    }, 100);
+    });
   }
   _injectStyles() {
     if (document.getElementById('audio-workspace-styles')) return;
