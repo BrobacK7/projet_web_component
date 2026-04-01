@@ -45,15 +45,15 @@ class AudioBusDiagram extends HTMLElement {
     const bg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
     bg.setAttribute('width', W);
     bg.setAttribute('height', H);
-    bg.setAttribute('fill', 'rgba(255,255,255,0.02)');
+    bg.setAttribute('fill', 'rgba(139,92,246,0.04)');
     svg.appendChild(bg);
 
     const nodes = [
-      { x: 20, y: 80, label: 'insertInput', color: '#60a5fa' },
-      { x: 100, y: 40, label: 'effects', color: '#f472b6' },
-      { x: 180, y: 80, label: 'insertOutput', color: '#60a5fa' },
-      { x: 260, y: 80, label: 'masterGain', color: '#34d399' },
-      { x: 340, y: 80, label: 'dest', color: '#fbbf24' },
+      { x: 20, y: 80, label: 'insertInput', color: '#a78bfa' },
+      { x: 100, y: 40, label: 'effects', color: '#e879f9' },
+      { x: 180, y: 80, label: 'insertOutput', color: '#a78bfa' },
+      { x: 260, y: 80, label: 'masterGain', color: '#c084fc' },
+      { x: 340, y: 80, label: 'dest', color: '#f0abfc' },
     ];
 
     // Draw connections (paths with arrows)
@@ -73,7 +73,7 @@ class AudioBusDiagram extends HTMLElement {
       const d = `M ${nf.x + 45} ${nf.y} Q ${(nf.x + nt.x) / 2} ${(nf.y + nt.y) / 2 - 20} ${nt.x} ${nt.y}`;
       path.setAttribute('d', d);
       path.setAttribute('fill', 'none');
-      path.setAttribute('stroke', 'rgba(29, 185, 84, 0.6)');
+      path.setAttribute('stroke', 'rgba(139,92,246,0.7)');
       path.setAttribute('stroke-width', '2');
       svg.appendChild(path);
 
@@ -82,7 +82,7 @@ class AudioBusDiagram extends HTMLElement {
       const arrowY = nt.y;
       const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
       arrow.setAttribute('points', `${arrowX},${arrowY - 5} ${arrowX + 10},${arrowY} ${arrowX},${arrowY + 5}`);
-      arrow.setAttribute('fill', 'rgba(29, 185, 84, 0.8)');
+      arrow.setAttribute('fill', 'rgba(167,139,250,0.9)');
       svg.appendChild(arrow);
     });
 
@@ -116,16 +116,16 @@ class AudioBusDiagram extends HTMLElement {
     title.setAttribute('x', 10);
     title.setAttribute('y', 20);
     title.setAttribute('font-size', '11');
-    title.setAttribute('fill', 'rgba(255,255,255,0.5)');
+    title.setAttribute('fill', 'rgba(200,185,255,0.8)');
     title.setAttribute('font-weight', '600');
     title.textContent = 'Audio Graph';
     svg.appendChild(title);
 
     // Legend
     const legend = [
-      { label: 'Input', color: '#60a5fa' },
-      { label: 'Effects', color: '#f472b6' },
-      { label: 'Master', color: '#34d399' },
+      { label: 'Input', color: '#a78bfa' },
+      { label: 'Effects', color: '#e879f9' },
+      { label: 'Master', color: '#c084fc' },
     ];
     legend.forEach((item, i) => {
       const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
@@ -139,7 +139,7 @@ class AudioBusDiagram extends HTMLElement {
       text.setAttribute('x', 286 + i * 50);
       text.setAttribute('y', 24);
       text.setAttribute('font-size', '8');
-      text.setAttribute('fill', 'rgba(255,255,255,0.4)');
+      text.setAttribute('fill', 'rgba(180,160,240,0.7)');
       text.textContent = item.label;
       svg.appendChild(text);
     });
@@ -149,22 +149,27 @@ class AudioBusDiagram extends HTMLElement {
     this.shadowRoot.innerHTML = `
       <style>
         :host {
-          --ap-bg: #111113;
-          --ap-surface: #1a1a1f;
-          --ap-text-muted: #6b6b7a;
+          --ap-bg: #0d0d12;
+          --ap-surface: #16161f;
+          --ap-text-muted: #9d8fc4;
           --ap-radius: 12px;
           --ap-font: 'DM Sans', 'Segoe UI', system-ui, sans-serif;
           --ap-width: 360px;
-          display: inline-block;
+          display: block;
+          width: 100%;
+          height: 100%;
           font-family: var(--ap-font);
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         .diagram {
           background: var(--ap-bg);
-          border: 1px solid rgba(255,255,255,0.06);
+          border: 1px solid rgba(139,92,246,0.30);
           border-radius: var(--ap-radius);
-          width: var(--ap-width);
+          width: 100%;
+          height: 100%;
           padding: 16px;
+          display: flex;
+          flex-direction: column;
         }
         .title {
           font-size: 11px;
@@ -177,7 +182,9 @@ class AudioBusDiagram extends HTMLElement {
         svg {
           display: block;
           width: 100%;
-          height: auto;
+          height: 100%;
+          min-height: 140px;
+          flex: 1 1 auto;
           background: var(--ap-surface);
           border-radius: 8px;
         }

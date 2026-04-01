@@ -28,6 +28,7 @@ class AudioVisualizer extends HTMLElement {
     this._volumeSmooth = 0;
     this._ready     = false;
     this._drawLoop  = this._drawLoop.bind(this);
+    this._resizeObserver = null;
   }
 
   connectedCallback() {
@@ -47,6 +48,10 @@ class AudioVisualizer extends HTMLElement {
 
   disconnectedCallback() {
     this._stopLoop();
+    if (this._resizeObserver) {
+      this._resizeObserver.disconnect();
+      this._resizeObserver = null;
+    }
     document.removeEventListener('audiobus:ready', this._onBusReady);
     document.removeEventListener('audio:play',     this._onPlay);
     document.removeEventListener('audio:pause',    this._onStop);
@@ -132,7 +137,7 @@ class AudioVisualizer extends HTMLElement {
       else ctx.rect(x, y, barW, barH);
       ctx.fill();
       if (barH > 4) {
-        ctx.fillStyle = 'rgba(255,255,255,0.5)';
+        ctx.fillStyle = 'rgba(167,139,250,0.7)';
         ctx.fillRect(x, y, barW, 2);
       }
     }
@@ -145,13 +150,13 @@ class AudioVisualizer extends HTMLElement {
     const W = canvas.width, H = canvas.height;
     this._analyser.getByteTimeDomainData(this._dataArray);
     ctx.clearRect(0, 0, W, H);
-    ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+    ctx.strokeStyle = 'rgba(139,92,246,0.10)';
     ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(0, H / 2); ctx.lineTo(W, H / 2); ctx.stroke();
     const grad = ctx.createLinearGradient(0, 0, W, 0);
-    grad.addColorStop(0,   'rgba(29,185,84,0.3)');
-    grad.addColorStop(0.5, 'rgba(29,185,84,1)');
-    grad.addColorStop(1,   'rgba(29,185,84,0.3)');
+    grad.addColorStop(0,   'rgba(139,92,246,0.3)');
+    grad.addColorStop(0.5, 'rgba(167,139,250,1)');
+    grad.addColorStop(1,   'rgba(139,92,246,0.3)');
     ctx.strokeStyle = grad;
     ctx.lineWidth = 2;
     ctx.lineJoin  = 'round';
@@ -194,7 +199,7 @@ class AudioVisualizer extends HTMLElement {
     ctx.clearRect(0, 0, W, H);
 
     // Grille discrete en fond pour rendre la dynamique lisible
-    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+    ctx.strokeStyle = 'rgba(139,92,246,0.12)';
     ctx.lineWidth = 1;
     for (let i = 1; i < 10; i++) {
       const x = (W / 10) * i;
@@ -210,7 +215,7 @@ class AudioVisualizer extends HTMLElement {
     const peakY = 62;
     const barH = 16;
 
-    const bg = 'rgba(255,255,255,0.08)';
+    const bg = 'rgba(139,92,246,0.06)';
     ctx.fillStyle = bg;
     if (ctx.roundRect) {
       ctx.beginPath();
@@ -223,9 +228,9 @@ class AudioVisualizer extends HTMLElement {
     }
 
     const grad = ctx.createLinearGradient(meterX, 0, meterX + meterW, 0);
-    grad.addColorStop(0.0, '#1db954');
-    grad.addColorStop(0.7, '#f3c84b');
-    grad.addColorStop(1.0, '#ff4d4d');
+    grad.addColorStop(0.0, '#8b5cf6');
+    grad.addColorStop(0.5, '#c084fc');
+    grad.addColorStop(1.0, '#f472b6');
     ctx.fillStyle = grad;
 
     const rmsW = Math.max(0, meterW * this._volumeSmooth);
@@ -240,7 +245,7 @@ class AudioVisualizer extends HTMLElement {
       ctx.fillRect(meterX, peakY, peakW, barH);
     }
 
-    ctx.fillStyle = 'rgba(255,255,255,0.65)';
+    ctx.fillStyle = 'rgba(200,185,255,0.8)';
     ctx.font = '10px sans-serif';
     ctx.fillText('RMS', meterX, rmsY - 6);
     ctx.fillText('PEAK', meterX, peakY - 6);
@@ -253,16 +258,16 @@ class AudioVisualizer extends HTMLElement {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     if (this._mode === 'waveform') {
       const grad = ctx.createLinearGradient(0, 0, canvas.width, 0);
-      grad.addColorStop(0,   'rgba(29,185,84,0.1)');
-      grad.addColorStop(0.5, 'rgba(29,185,84,0.25)');
-      grad.addColorStop(1,   'rgba(29,185,84,0.1)');
+      grad.addColorStop(0,   'rgba(139,92,246,0.1)');
+      grad.addColorStop(0.5, 'rgba(139,92,246,0.25)');
+      grad.addColorStop(1,   'rgba(139,92,246,0.1)');
       ctx.strokeStyle = grad; ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.moveTo(0, canvas.height / 2);
       ctx.lineTo(canvas.width, canvas.height / 2);
       ctx.stroke();
     } else if (this._mode === 'volume') {
-      ctx.fillStyle = 'rgba(255,255,255,0.18)';
+      ctx.fillStyle = 'rgba(167,139,250,0.30)';
       ctx.font = '11px sans-serif';
       ctx.fillText('Niveau: 0%', 14, 20);
     }
@@ -299,21 +304,21 @@ class AudioVisualizer extends HTMLElement {
     const volActive  = this._mode === 'volume'   ? ' active' : '';
     const css = [
       ':host {',
-      '  --ap-bg: #111113; --ap-surface2: #242429;',
-      '  --ap-accent: #1db954; --ap-text: #ffffff;',
-      '  --ap-text-muted: #6b6b7a; --ap-radius: 12px;',
+      '  --ap-bg: #0d0d12; --ap-surface2: #1e1e2a;',
+      '  --ap-accent: #8b5cf6; --ap-text: #f0eaff;',
+      '  --ap-text-muted: #9d8fc4; --ap-radius: 12px;',
       "  --ap-font: 'DM Sans','Segoe UI',system-ui,sans-serif;",
-      '  --ap-width: 360px; display: inline-block; font-family: var(--ap-font);',
+      '  --ap-width: 360px; display: block; width: 100%; height: 100%; font-family: var(--ap-font);',
       '}',
       '* { box-sizing: border-box; margin: 0; padding: 0; }',
-      '.viz { background: var(--ap-bg); border: 1px solid rgba(255,255,255,0.06); border-radius: var(--ap-radius); width: var(--ap-width); padding: 16px; color: var(--ap-text); overflow: hidden; }',
+      '.viz { background: var(--ap-bg); border: 1px solid rgba(139,92,246,0.30); border-radius: var(--ap-radius); width: 100%; height: 100%; padding: 16px; color: var(--ap-text); overflow: hidden; display: flex; flex-direction: column; }',
       '.header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }',
       '.header__title { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ap-text-muted); }',
       '.tabs { display: flex; gap: 4px; }',
-      '.tab { background: none; border: 1px solid rgba(255,255,255,0.08); border-radius: 4px; color: var(--ap-text-muted); font-size: 10px; padding: 3px 10px; cursor: pointer; outline: none; transition: color 0.15s, border-color 0.15s, background 0.15s; letter-spacing: 0.05em; }',
+      '.tab { background: none; border: 1px solid rgba(139,92,246,0.20); border-radius: 4px; color: var(--ap-text-muted); font-size: 10px; padding: 3px 10px; cursor: pointer; outline: none; transition: color 0.15s, border-color 0.15s, background 0.15s; letter-spacing: 0.05em; }',
       '.tab:hover { color: var(--ap-text); }',
-      '.tab.active { background: rgba(29,185,84,0.12); color: var(--ap-accent); border-color: var(--ap-accent); }',
-      '.canvas-wrap { position: relative; width: 100%; height: 100px; border-radius: 8px; overflow: hidden; background: var(--ap-surface2); }',
+      '.tab.active { background: rgba(139,92,246,0.15); color: var(--ap-accent); border-color: var(--ap-accent); }',
+      '.canvas-wrap { position: relative; width: 100%; flex: 1 1 auto; min-height: 100px; border-radius: 8px; overflow: hidden; background: var(--ap-surface2); }',
       'canvas { display: block; width: 100%; height: 100%; }',
       '.idle-msg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--ap-text-muted); font-style: italic; pointer-events: none; transition: opacity 0.3s; }',
       '.idle-msg.hidden { opacity: 0; }'
@@ -328,17 +333,35 @@ class AudioVisualizer extends HTMLElement {
       + '</div></div>'
       + '<div class="canvas-wrap">'
       + '<canvas id="canvas"></canvas>'
-      + '<div class="idle-msg" id="idleMsg">Lance la lecture pour visualiser</div>'
+      + '<div class="idle-msg" id="idleMsg"></div>'
       + '</div></div>';
     this.shadowRoot.innerHTML = '<style>' + css + '</style>' + html;
     requestAnimationFrame(() => {
-      const canvas = this.shadowRoot.getElementById('canvas');
-      if (!canvas) return;
-      const wrap = canvas.parentElement;
-      canvas.width  = wrap.clientWidth  || 328;
-      canvas.height = wrap.clientHeight || 100;
+      this._syncCanvasSize();
+      this._observeCanvasResize();
       this._resetCanvas();
     });
+  }
+
+  _syncCanvasSize() {
+    const canvas = this.shadowRoot.getElementById('canvas');
+    if (!canvas) return;
+    const wrap = canvas.parentElement;
+    const nextW = wrap.clientWidth || 328;
+    const nextH = wrap.clientHeight || 100;
+    if (canvas.width !== nextW) canvas.width = nextW;
+    if (canvas.height !== nextH) canvas.height = nextH;
+  }
+
+  _observeCanvasResize() {
+    if (this._resizeObserver) this._resizeObserver.disconnect();
+    const wrap = this.shadowRoot.querySelector('.canvas-wrap');
+    if (!wrap || typeof ResizeObserver === 'undefined') return;
+    this._resizeObserver = new ResizeObserver(() => {
+      this._syncCanvasSize();
+      if (!this._isPlaying) this._resetCanvas();
+    });
+    this._resizeObserver.observe(wrap);
   }
 }
 

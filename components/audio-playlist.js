@@ -189,17 +189,19 @@ class AudioPlaylist extends HTMLElement {
     this.shadowRoot.innerHTML = `
       <style>
         :host {
-          --ap-bg:          #111113;
-          --ap-surface:     #1a1a1f;
-          --ap-surface2:    #242429;
-          --ap-accent:      #1db954;
-          --ap-text:        #ffffff;
-          --ap-text-muted:  #6b6b7a;
+          --ap-bg:          #0d0d12;
+          --ap-surface:     #16161f;
+          --ap-surface2:    #1e1e2a;
+          --ap-accent:      #8b5cf6;
+          --ap-text:        #f0eaff;
+          --ap-text-muted:  #9d8fc4;
           --ap-radius:      12px;
           --ap-font:        'DM Sans', 'Segoe UI', system-ui, sans-serif;
           --ap-width:       360px;
 
-          display: inline-block;
+          display: block;
+          width: 100%;
+          height: 100%;
           font-family: var(--ap-font);
         }
 
@@ -207,11 +209,14 @@ class AudioPlaylist extends HTMLElement {
 
         .playlist {
           background: var(--ap-bg);
-          border: 1px solid rgba(255,255,255,0.06);
+          border: 1px solid rgba(139,92,246,0.30);
           border-radius: var(--ap-radius);
-          width: var(--ap-width);
+          width: 100%;
+          height: 100%;
           color: var(--ap-text);
           overflow: hidden;
+          display: flex;
+          flex-direction: column;
         }
 
         /* ── Header ── */
@@ -220,7 +225,7 @@ class AudioPlaylist extends HTMLElement {
           align-items: center;
           justify-content: space-between;
           padding: 14px 16px;
-          border-bottom: 1px solid rgba(255,255,255,0.05);
+          border-bottom: 1px solid rgba(139,92,246,0.12);
         }
         .header__title {
           font-size: 11px;
@@ -257,14 +262,15 @@ class AudioPlaylist extends HTMLElement {
         /* ── Liste ── */
         .list {
           list-style: none;
-          max-height: 280px;
+          flex: 1 1 auto;
+          min-height: 0;
           overflow-y: auto;
           scrollbar-width: thin;
-          scrollbar-color: rgba(255,255,255,0.1) transparent;
+          scrollbar-color: rgba(139,92,246,0.3) transparent;
         }
         .list::-webkit-scrollbar { width: 4px; }
         .list::-webkit-scrollbar-thumb {
-          background: rgba(255,255,255,0.1);
+          background: rgba(139,92,246,0.25);
           border-radius: 2px;
         }
 
@@ -275,14 +281,14 @@ class AudioPlaylist extends HTMLElement {
           padding: 10px 16px;
           cursor: pointer;
           transition: background 0.1s;
-          border-bottom: 1px solid rgba(255,255,255,0.03);
+          border-bottom: 1px solid rgba(139,92,246,0.08);
           position: relative;
         }
         .track:hover { background: var(--ap-surface); }
         .track:last-child { border-bottom: none; }
 
         .track.active {
-          background: rgba(29, 185, 84, 0.08);
+          background: rgba(139,92,246,0.12);
         }
         .track.active .track__title {
           color: var(--ap-accent);

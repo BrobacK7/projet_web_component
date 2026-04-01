@@ -169,17 +169,19 @@ class AudioEqualizer extends HTMLElement {
     this.shadowRoot.innerHTML = `
       <style>
         :host {
-          --ap-bg:         #111113;
-          --ap-surface:    #1a1a1f;
-          --ap-surface2:   #242429;
-          --ap-accent:     #1db954;
-          --ap-text:       #ffffff;
-          --ap-text-muted: #6b6b7a;
+          --ap-bg:         #0d0d12;
+          --ap-surface:    #16161f;
+          --ap-surface2:   #1e1e2a;
+          --ap-accent:     #8b5cf6;
+          --ap-text:       #f0eaff;
+          --ap-text-muted: #9d8fc4;
           --ap-radius:     12px;
           --ap-font:       'DM Sans', 'Segoe UI', system-ui, sans-serif;
           --ap-width:      360px;
 
-          display: inline-block;
+          display: block;
+          width: 100%;
+          height: 100%;
           font-family: var(--ap-font);
         }
 
@@ -187,13 +189,16 @@ class AudioEqualizer extends HTMLElement {
 
         .eq {
           background: var(--ap-bg);
-          border: 1px solid rgba(255,255,255,0.06);
+          border: 1px solid rgba(139,92,246,0.30);
           border-radius: var(--ap-radius);
-          width: var(--ap-width);
+          width: 100%;
+          height: 100%;
           padding: 16px;
           overflow: hidden;
           color: var(--ap-text);
           user-select: none;
+          display: flex;
+          flex-direction: column;
         }
 
         /* ── Header ── */
@@ -218,7 +223,7 @@ class AudioEqualizer extends HTMLElement {
 
         .btn-reset {
           background: none;
-          border: 1px solid rgba(255,255,255,0.08);
+          border: 1px solid rgba(139,92,246,0.20);
           border-radius: 4px;
           color: var(--ap-text-muted);
           font-size: 10px;
@@ -228,11 +233,11 @@ class AudioEqualizer extends HTMLElement {
           transition: color 0.15s, border-color 0.15s;
           letter-spacing: 0.05em;
         }
-        .btn-reset:hover { color: var(--ap-text); border-color: rgba(255,255,255,0.2); }
+        .btn-reset:hover { color: var(--ap-text); border-color: rgba(139,92,246,0.50); }
 
         .btn-bypass {
           background: none;
-          border: 1px solid rgba(255,255,255,0.08);
+          border: 1px solid rgba(139,92,246,0.20);
           border-radius: 4px;
           color: var(--ap-text-muted);
           font-size: 10px;
@@ -243,7 +248,7 @@ class AudioEqualizer extends HTMLElement {
           letter-spacing: 0.05em;
         }
         .btn-bypass.active {
-          background: rgba(29,185,84,0.12);
+          background: rgba(139,92,246,0.15);
           color: var(--ap-accent);
           border-color: var(--ap-accent);
         }
@@ -253,7 +258,8 @@ class AudioEqualizer extends HTMLElement {
           display: flex;
           justify-content: space-between;
           gap: 8px;
-          height: 140px;
+          flex: 1 1 auto;
+          min-height: 140px;
           align-items: stretch;
           overflow: hidden;
         }
@@ -269,11 +275,11 @@ class AudioEqualizer extends HTMLElement {
 
         /* valeur dB en haut */
         .band__db {
-          font-size: 10px;
+          font-size: 11px;
           color: var(--ap-accent);
           font-variant-numeric: tabular-nums;
-          height: 14px;
-          line-height: 14px;
+          height: 16px;
+          line-height: 16px;
           transition: color 0.15s;
         }
         .band__db.zero { color: var(--ap-text-muted); }
@@ -286,6 +292,7 @@ class AudioEqualizer extends HTMLElement {
           justify-content: center;
           position: relative;
           width: 100%;
+          min-height: 170px;
           overflow: hidden;
         }
 
@@ -293,34 +300,36 @@ class AudioEqualizer extends HTMLElement {
           -webkit-appearance: none;
           appearance: none;
           writing-mode: vertical-lr;
-          direction: rtl;
-          width: 100px;
-          height: 4px;
-          transform: rotate(-90deg);
-          transform-origin: center center;
+          direction: ltr;
+          width: 28px;
+          height: 100%;
+          min-height: 170px;
           background: transparent;
           cursor: pointer;
           outline: none;
           position: relative;
           z-index: 1;
+          touch-action: none;
         }
 
         /* Track background */
         input[type=range].slider::-webkit-slider-runnable-track {
-          width: 4px;
-          border-radius: 2px;
-          background: var(--ap-surface2);
+          width: 8px;
+          height: 100%;
+          border-radius: 999px;
+          background: var(--fill, var(--ap-surface2));
         }
         input[type=range].slider::-moz-range-track {
-          width: 4px;
-          border-radius: 2px;
-          background: var(--ap-surface2);
+          width: 8px;
+          height: 100%;
+          border-radius: 999px;
+          background: var(--fill, var(--ap-surface2));
         }
 
         /* Thumb */
         input[type=range].slider::-webkit-slider-thumb {
           -webkit-appearance: none;
-          width: 14px; height: 14px;
+          width: 18px; height: 18px;
           border-radius: 50%;
           background: var(--ap-text);
           border: 2px solid var(--ap-bg);
@@ -329,10 +338,10 @@ class AudioEqualizer extends HTMLElement {
         }
         input[type=range].slider:hover::-webkit-slider-thumb {
           background: var(--ap-accent);
-          transform: scale(1.15);
+          transform: scale(1.08);
         }
         input[type=range].slider::-moz-range-thumb {
-          width: 14px; height: 14px;
+          width: 18px; height: 18px;
           border-radius: 50%;
           background: var(--ap-text);
           border: 2px solid var(--ap-bg);
@@ -392,8 +401,8 @@ class AudioEqualizer extends HTMLElement {
                   id="slider${i}"
                   min="-12"
                   max="12"
-                  step="0.5"
-                  value="${this._gains[i] ?? 0}"
+                  step="0.25"
+                  value="${-(this._gains[i] ?? 0)}"
                   aria-label="${band.label}"
                 >
               </div>
@@ -403,7 +412,6 @@ class AudioEqualizer extends HTMLElement {
         </div>
 
         <div class="not-connected" id="notConnected" style="display:none">
-          ⚡ Lance la lecture pour activer l'EQ
         </div>
       </div>
     `;
@@ -427,7 +435,8 @@ class AudioEqualizer extends HTMLElement {
       if (!sl) return;
 
       sl.addEventListener('input', () => {
-        const db = parseFloat(sl.value);
+        // Inverse le mapping natif vertical pour avoir "haut = +dB".
+        const db = -parseFloat(sl.value);
         this._setBand(i, db);
         this._updateSliderFill(sl, db);
       });
@@ -462,20 +471,20 @@ class AudioEqualizer extends HTMLElement {
   _updateSliderFill(slider, db) {
     // Colore le track entre 0 et la valeur actuelle via CSS gradient
     const pct = ((db - (-12)) / 24) * 100;
-    const midPct = ((0 - (-12)) / 24) * 100; // position du 0 dB
+    const midPct = 50; // position du 0 dB
 
-    const accent = getComputedStyle(this).getPropertyValue('--ap-accent').trim() || '#1db954';
-    const surface2 = '#242429';
+    const style = getComputedStyle(this);
+    const accent = style.getPropertyValue('--ap-accent').trim() || '#8b5cf6';
+    const surface2 = style.getPropertyValue('--ap-surface2').trim() || '#1e1e2a';
 
-    // Pour slider vertical (writing-mode vertical-lr + direction rtl)
-    // 100% = bas, 0% = haut. La valeur monte vers le haut.
+    // Slider vertical: le remplissage doit monter visuellement avec la valeur.
     if (db >= 0) {
       slider.style.setProperty('--fill',
-        `linear-gradient(to top, ${surface2} ${100 - pct}%, ${accent} ${100 - pct}%, ${accent} ${100 - midPct}%, ${surface2} ${100 - midPct}%)`
+        `linear-gradient(to top, ${surface2} 0%, ${surface2} ${midPct}%, ${accent} ${midPct}%, ${accent} ${pct}%, ${surface2} ${pct}%, ${surface2} 100%)`
       );
     } else {
       slider.style.setProperty('--fill',
-        `linear-gradient(to top, ${surface2} ${100 - midPct}%, rgba(29,185,84,0.4) ${100 - midPct}%, rgba(29,185,84,0.4) ${100 - pct}%, ${surface2} ${100 - pct}%)`
+        `linear-gradient(to top, ${surface2} 0%, ${surface2} ${pct}%, rgba(139,92,246,0.45) ${pct}%, rgba(139,92,246,0.45) ${midPct}%, ${surface2} ${midPct}%, ${surface2} 100%)`
       );
     }
   }

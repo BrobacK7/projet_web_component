@@ -300,15 +300,17 @@ class AudioWamEffect extends HTMLElement {
     this.shadowRoot.innerHTML = `
       <style>
         :host {
-          --ap-bg: #111113;
-          --ap-surface2: #242429;
-          --ap-accent: #1db954;
-          --ap-text: #ffffff;
-          --ap-text-muted: #6b6b7a;
+          --ap-bg: #0d0d12;
+          --ap-surface2: #1e1e2a;
+          --ap-accent: #8b5cf6;
+          --ap-text: #f0eaff;
+          --ap-text-muted: #9d8fc4;
           --ap-radius: 12px;
           --ap-font: 'DM Sans', 'Segoe UI', system-ui, sans-serif;
           --ap-width: 360px;
-          display: inline-block;
+          display: block;
+          width: 100%;
+          height: 100%;
           font-family: var(--ap-font);
         }
 
@@ -316,9 +318,10 @@ class AudioWamEffect extends HTMLElement {
 
         .wam {
           background: var(--ap-bg);
-          border: 1px solid rgba(255,255,255,0.06);
+          border: 1px solid rgba(139,92,246,0.30);
           border-radius: var(--ap-radius);
-          width: var(--ap-width);
+          width: 100%;
+          height: 100%;
           padding: 16px;
           color: var(--ap-text);
         }
@@ -340,7 +343,7 @@ class AudioWamEffect extends HTMLElement {
 
         .btn {
           background: none;
-          border: 1px solid rgba(255,255,255,0.08);
+          border: 1px solid rgba(139,92,246,0.20);
           border-radius: 4px;
           color: var(--ap-text-muted);
           font-size: 10px;
@@ -350,9 +353,9 @@ class AudioWamEffect extends HTMLElement {
           transition: all 0.15s;
           letter-spacing: 0.05em;
         }
-        .btn:hover { color: var(--ap-text); border-color: rgba(255,255,255,0.2); }
+        .btn:hover { color: var(--ap-text); border-color: rgba(139,92,246,0.50); }
         .btn.active {
-          background: rgba(29,185,84,0.12);
+          background: rgba(139,92,246,0.15);
           color: var(--ap-accent);
           border-color: var(--ap-accent);
         }
@@ -363,7 +366,7 @@ class AudioWamEffect extends HTMLElement {
           flex: 1;
           min-width: 0;
           background: var(--ap-surface2);
-          border: 1px solid rgba(255,255,255,0.08);
+          border: 1px solid rgba(139,92,246,0.20);
           border-radius: 8px;
           color: var(--ap-text);
           padding: 8px 10px;

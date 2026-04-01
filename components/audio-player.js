@@ -224,18 +224,20 @@ class AudioPlayer extends HTMLElement {
       <style>
         /* ── CSS Variables (customisables depuis l'extérieur) ── */
         :host {
-          --ap-bg:           #111113;
-          --ap-surface:      #1a1a1f;
-          --ap-surface2:     #242429;
-          --ap-accent:       #1db954;
-          --ap-accent-dim:   #158a3e;
-          --ap-text:         #ffffff;
-          --ap-text-muted:   #6b6b7a;
+          --ap-bg:           #0d0d12;
+          --ap-surface:      #16161f;
+          --ap-surface2:     #1e1e2a;
+          --ap-accent:       #8b5cf6;
+          --ap-accent-dim:   #6d3fcf;
+          --ap-text:         #f0eaff;
+          --ap-text-muted:   #9d8fc4;
           --ap-radius:       12px;
           --ap-font:         'DM Sans', 'Segoe UI', system-ui, sans-serif;
           --ap-width:        360px;
 
-          display: inline-block;
+          display: block;
+          width: 100%;
+          height: 100%;
           font-family: var(--ap-font);
         }
 
@@ -243,9 +245,10 @@ class AudioPlayer extends HTMLElement {
 
         .player {
           background: var(--ap-bg);
-          border: 1px solid rgba(255,255,255,0.06);
+          border: 1px solid rgba(139,92,246,0.30);
           border-radius: var(--ap-radius);
-          width: var(--ap-width);
+          width: 100%;
+          height: 100%;
           padding: 24px;
           color: var(--ap-text);
           user-select: none;
@@ -260,7 +263,7 @@ class AudioPlayer extends HTMLElement {
           top: -60px; left: 50%;
           transform: translateX(-50%);
           width: 200px; height: 200px;
-          background: radial-gradient(circle, rgba(29,185,84,0.08) 0%, transparent 70%);
+          background: radial-gradient(circle, rgba(139,92,246,0.10) 0%, transparent 70%);
           pointer-events: none;
         }
 
@@ -352,7 +355,7 @@ class AudioPlayer extends HTMLElement {
           transition: background 0.15s, transform 0.1s;
         }
         .btn--play:hover {
-          background: #1ed760;
+          background: #a78bfa;
           color: #000;
           transform: scale(1.06);
         }

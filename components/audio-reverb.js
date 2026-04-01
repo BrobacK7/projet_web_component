@@ -192,23 +192,23 @@ class AudioReverb extends HTMLElement {
 
     const css = [
       ":host {",
-      "  --ap-bg: #111113; --ap-surface2: #242429;",
-      "  --ap-accent: #1db954; --ap-text: #ffffff;",
-      "  --ap-text-muted: #6b6b7a; --ap-radius: 12px;",
+      "  --ap-bg: #0d0d12; --ap-surface2: #1e1e2a;",
+      "  --ap-accent: #8b5cf6; --ap-text: #f0eaff;",
+      "  --ap-text-muted: #9d8fc4; --ap-radius: 12px;",
       "  --ap-font: 'DM Sans','Segoe UI',system-ui,sans-serif;",
       "  --ap-width: 360px;",
-      "  display: inline-block; font-family: var(--ap-font);",
+      "  display: block; width: 100%; height: 100%; font-family: var(--ap-font);",
       "}",
       "* { box-sizing: border-box; margin: 0; padding: 0; }",
-      ".reverb { background: var(--ap-bg); border: 1px solid rgba(255,255,255,0.06); border-radius: var(--ap-radius); width: var(--ap-width); padding: 16px; color: var(--ap-text); user-select: none; overflow: hidden; }",
+      ".reverb { background: var(--ap-bg); border: 1px solid rgba(139,92,246,0.30); border-radius: var(--ap-radius); width: 100%; height: 100%; padding: 16px; color: var(--ap-text); user-select: none; overflow: hidden; }",
       ".header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }",
       ".header__title { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ap-text-muted); }",
       ".presets { display: flex; gap: 8px; justify-content: space-between; }",
-      ".preset-btn { flex: 1; background: var(--ap-surface2); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; color: var(--ap-text-muted); font-size: 12px; font-weight: 500; font-family: var(--ap-font); padding: 10px 0; cursor: pointer; transition: all 0.15s; outline: none; }",
-      ".preset-btn:hover { color: var(--ap-text); border-color: rgba(255,255,255,0.15); background: #2a2a30; }",
+      ".preset-btn { flex: 1; background: var(--ap-surface2); border: 1px solid rgba(139,92,246,0.30); border-radius: 8px; color: var(--ap-text-muted); font-size: 12px; font-weight: 500; font-family: var(--ap-font); padding: 10px 0; cursor: pointer; transition: all 0.15s; outline: none; }",
+      ".preset-btn:hover { color: var(--ap-text); border-color: rgba(139,92,246,0.45); background: #1a1a28; }",
       ".preset-btn.active { background: color-mix(in srgb, var(--preset-color) 15%, transparent); color: var(--preset-color); border-color: var(--preset-color); }",
       ".btn-bypass { background: none; border: 1px solid rgba(255,255,255,0.08); border-radius: 4px; color: var(--ap-text-muted); font-size: 10px; font-family: var(--ap-font); padding: 3px 8px; cursor: pointer; transition: all 0.15s; letter-spacing: 0.05em; outline: none; }",
-      ".btn-bypass.active { background: rgba(29,185,84,0.12); color: var(--ap-accent); border-color: var(--ap-accent); }",
+      ".btn-bypass.active { background: rgba(139,92,246,0.15); color: var(--ap-accent); border-color: var(--ap-accent); }",
       ".not-connected { font-size: 11px; color: var(--ap-text-muted); text-align: center; padding: 8px 0 0; font-style: italic; }"
     ].join("")
 
@@ -219,7 +219,7 @@ class AudioReverb extends HTMLElement {
           <button class="btn-bypass" id="btnBypass">Active</button>
         </div>
         <div class="presets" id="presets">${presetsHTML}</div>
-        <div class="not-connected" id="notConnected">Lance la lecture pour activer la reverb</div>
+        <div class="not-connected" id="notConnected"></div>
       </div>`;
 
     this.shadowRoot.innerHTML = `<style>${css}</style>${html}`;
