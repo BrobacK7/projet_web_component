@@ -79,16 +79,22 @@ Tag:
 - audio-player
 
 Role:
-- charger et lire une source audio
+- charger et lire une source audio ou une playlist compacte
 - exposer controles play/pause/seek/volume
-- emettre les evenements de transport
+- gerer next/prev, shuffle, loop et autoadvance
 
 Attributs HTML:
+- tracks: JSON array de pistes
+  - format: [{ "src": "...", "title": "...", "artist": "..." }] ou ["file1.mp3", "file2.mp3"]
 - src: URL de la piste
 - title: titre affiche
 - artist: artiste affiche
 - autoplay: demarre automatiquement apres chargement metadata
+- autoadvance: active/desactive le passage auto a la piste suivante
+  - comportement: actif par defaut
+  - valeur "false" desactive
 - loop: boucle de la piste
+- shuffle: lecture aleatoire des pistes
 
 Methodes externes:
 - play()
@@ -102,7 +108,7 @@ Proprietes exposees:
 
 Evenements emis:
 - audio:play
-  - detail: { src, title, artist }
+  - detail: { src, title, artist, index }
 - audio:pause
 - audio:seek
   - detail: { time }
@@ -123,44 +129,7 @@ Evenements ecoutes:
 
 ---
 
-## 2.3 audio-playlist
-
-Tag:
-- audio-playlist
-
-Role:
-- gerer une liste de pistes
-- piloter le player via events
-- gerer next/prev, shuffle, loop, autoadvance
-
-Attributs HTML:
-- tracks: JSON array de pistes
-  - format: [{ "src": "...", "title": "...", "artist": "..." }]
-- autoadvance: active/desactive le passage auto a la piste suivante
-  - comportement: actif par defaut
-  - valeur "false" desactive
-- loop: boucle sur la playlist
-- shuffle: lecture aleatoire
-
-Methodes externes:
-- pas d'API imperative publique stable (pilotage conseille par attributs + events)
-
-Proprietes exposees:
-- aucune propriete publique contractuelle
-
-Evenements emis:
-- audio:external-play
-  - detail: { src, title, artist, index }
-
-Evenements ecoutes:
-- audio:ended
-- audio:play
-- audio:next
-- audio:prev
-
----
-
-## 2.4 audio-equalizer
+## 2.3 audio-equalizer
 
 Tag:
 - audio-equalizer
@@ -192,7 +161,7 @@ Notes techniques:
 
 ---
 
-## 2.5 audio-visualizer
+## 2.4 audio-visualizer
 
 Tag:
 - audio-visualizer
@@ -226,7 +195,7 @@ Notes techniques:
 
 ---
 
-## 2.6 audio-reverb
+## 2.5 audio-reverb
 
 Tag:
 - audio-reverb
@@ -257,7 +226,7 @@ Notes techniques:
 
 ---
 
-## 2.7 audio-workspace
+## 2.6 audio-workspace
 
 Tag:
 - audio-workspace
@@ -283,38 +252,7 @@ Evenements ecoutes:
 
 ---
 
-## 2.8 audio-bus-diagram
-
-Tag:
-- audio-bus-diagram
-
-Role:
-- afficher un diagramme visuel du routage audio
-- montrer graphiquement les connexions: insertInput -> effets -> insertOutput -> masterGain -> destination
-- lecture seule, mise a jour au demarrage
-
-Attributs HTML:
-- aucun
-
-Methodes externes:
-- aucune
-
-Proprietes exposees:
-- aucune
-
-Evenements emis:
-- aucun
-
-Evenements ecoutes:
-- audiobus:ready (pour synchroniser le diagramme)
-
-Notes techniques:
-- composant SVG avec noeuds et fleches
-- representation schematique, pas en temps reel de la chaine d'effets dynamique
-
----
-
-## 2.9 audio-wam-effect
+## 2.7 audio-wam-effect
 
 Tag:
 - audio-wam-effect
@@ -327,6 +265,10 @@ Attributs HTML:
 - src: URL du module WAM a charger
 - mix: mix wet [0..1]
 - bypass: bypass de l'effet
+
+Comportement par defaut:
+- si `src` est absent, le composant charge `./assets/wam/basic-drive-wam.js`
+- l'utilisateur peut remplacer le `src` via l'UI integree (champ URL + bouton Load)
 
 Methodes externes:
 - pas de methode publique imperative stabilisee (pilotage recommande via attributs)

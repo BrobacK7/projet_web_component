@@ -19,24 +19,12 @@
   <!-- Workspace — panneau lateral + fenetres flottantes -->
   <audio-workspace id="workspace"></audio-workspace>
 
-  <script>
-    // Sync playlist -> player (find any audio-player in the document)
-    document.addEventListener("audio:external-play", (e) => {
-      const player = document.querySelector("audio-player");
-      if (!player) return;
-      if (e.detail && e.detail.title)  player.setAttribute("title",  e.detail.title);
-      if (e.detail && e.detail.artist) player.setAttribute("artist", e.detail.artist);
-    });
-  </script>
-
   <script type="module" src="./components/audio-bus.js"></script>
   <script type="module" src="./components/audio-player.js"></script>
-  <script type="module" src="./components/audio-playlist.js"></script>
   <script type="module" src="./components/audio-equalizer.js"></script>
   <script type="module" src="./components/audio-visualizer.js"></script>
   <script type="module" src="./components/audio-reverb.js"></script>
   <script type="module" src="./components/audio-wam-effect.js"></script>
-  <script type="module" src="./components/audio-bus-diagram.js"></script>
   <script type="module" src="./components/audio-workspace.js"></script>
 
 </body>

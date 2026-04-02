@@ -44,6 +44,10 @@ class AudioVisualizer extends HTMLElement {
     document.addEventListener('audio:play',     this._onPlay);
     document.addEventListener('audio:pause',    this._onStop);
     document.addEventListener('audio:ended',    this._onStop);
+
+    // If the visualizer is mounted after playback already started,
+    // recover current playback state from existing players.
+    this._syncInitialPlaybackState();
   }
 
   disconnectedCallback() {
@@ -296,6 +300,15 @@ class AudioVisualizer extends HTMLElement {
         this.setAttribute('mode', this._mode);
       });
     });
+  }
+
+  _syncInitialPlaybackState() {
+    const activePlayer = document.querySelector('audio-player[playing]');
+    if (activePlayer) {
+      this._isPlaying = true;
+      this._startLoop();
+      this._hideIdle();
+    }
   }
 
   _render() {

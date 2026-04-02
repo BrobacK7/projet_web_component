@@ -3,7 +3,6 @@ Projet Web Components 2025-2026
 Ce depot contient des Web Components audio reutilisables:
 - audio-bus
 - audio-player
-- audio-playlist
 - audio-equalizer
 - audio-visualizer (modes fft, waveform, volume)
 - audio-reverb

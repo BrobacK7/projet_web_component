@@ -23,22 +23,21 @@ Construire une suite de composants audio reutilisables, faiblement couples, qui 
 
 - index.html: page de demonstration / integration
 - components/audio-bus.js: contexte Web Audio partage + chaine d'effets
-- components/audio-player.js: lecteur principal
-- components/audio-playlist.js: playlist et navigation titres
+- components/audio-player.js: lecteur principal avec playlist integree
 - components/audio-equalizer.js: EQ 5 bandes
 - components/audio-visualizer.js: visualisation FFT + waveform + volume (VU)
 - components/audio-reverb.js: effet de reverb algorithmique
+- assets/wam/basic-drive-wam.js: WAM integre par defaut (remplacable par URL)
 - components/audio-workspace.js: panneau lateral + fenetres flottantes
 
 ## Architecture (resume)
 
 1. audio-bus cree et expose window.AudioBus (AudioContext, nodes d'insertion et master).
-2. audio-player lit la source audio et injecte le flux dans la chaine du bus.
+2. audio-player lit la source audio, gere une playlist optionnelle, et injecte le flux dans la chaine du bus.
 3. Les effets (EQ, Reverb, WAM) se branchent dynamiquement via AudioBus.connectEffect(...).
 4. Le visualiser lit le signal via AnalyserNode en tap lecture seule.
-5. Le bus-diagram affiche un schema graphique du routage audio.
-6. La coordination UI se fait principalement via CustomEvent sur document.
-7. Player et bus-diagram sont demarres automatiquement comme fenetres draggables du workspace.
+5. La coordination UI se fait principalement via CustomEvent sur document.
+6. Player est demarre automatiquement comme fenetre draggable du workspace.
 
 ## Utilisation rapide
 
@@ -51,6 +50,11 @@ Exemple minimal dans une page HTML avec URI publiques:
 <script type="module" src="https://broback7.github.io/projet_web_component/components/audio-bus.js"></script>
 <script type="module" src="https://broback7.github.io/projet_web_component/components/audio-player.js"></script>
 ```
+
+Pour afficher une playlist dans le meme composant, utiliser l'attribut `tracks` avec un JSON de pistes.
+
+Pour WAM, le composant `audio-wam-effect` charge par defaut `./assets/wam/basic-drive-wam.js`.
+L'utilisateur peut saisir une autre URL ESM dans son champ `src` et cliquer sur Load.
 
 Exemple complet de demo: voir index.html.
 

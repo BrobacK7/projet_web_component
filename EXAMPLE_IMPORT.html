@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Example: Importing Audio Components</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { 
+      height: 100%; 
+      overflow: hidden; 
+      background: #f2f4f8;
+      font-family: 'DM Sans', system-ui, sans-serif;
+    }
+    
+    .container {
+      display: flex;
+      width: 100%;
+      height: 100vh;
+      gap: 20px;
+      padding: 20px;
+    }
+    
+    .section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      overflow-y: auto;
+    }
+    
+    .section h2 {
+      font-size: 18px;
+      color: #1f2937;
+      margin-bottom: 8px;
+    }
+    
+    .component-box {
+      border: 1px solid #d4d9e2;
+      border-radius: 8px;
+      padding: 16px;
+      background: #ffffff;
+      min-height: 200px;
+    }
+
+    .component-box--player {
+      min-height: 520px;
+    }
+    
+    .info {
+      background: #eef3fb;
+      border-left: 4px solid #2563eb;
+      padding: 12px;
+      border-radius: 4px;
+      font-size: 13px;
+      color: #1e40af;
+      margin-bottom: 16px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- Column 1: Audio Playback -->
+    <div class="section">
+      <h2>🎵 Audio Playback</h2>
+      
+      <!-- Audio Bus (required for all effects and visualization) -->
+      <div class="component-box">
+        <p style="color: #666; font-size: 12px; margin-bottom: 8px;">Shared Audio Context</p>
+        <audio-bus></audio-bus>
+      </div>
+      
+      <!-- Audio Player -->
+      <div class="component-box component-box--player">
+        <audio-player 
+          tracks='[
+            {"src":"./assets/demo/sonic.mp3","title":"Sonic","artist":"Demo Audio"},
+            {"src":"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3","title":"SoundHelix Song 2","artist":"SoundHelix"},
+            {"src":"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3","title":"SoundHelix Song 3","artist":"SoundHelix"}
+          ]'
+          autoadvance="true"
+        ></audio-player>
+      </div>
+    </div>
+    
+    <!-- Column 2: Effects & Visualization -->
+    <div class="section">
+      <h2>🎚️ Effects & Visualization</h2>
+      
+      <!-- Audio Equalizer -->
+      <div class="component-box">
+        <audio-equalizer></audio-equalizer>
+      </div>
+      
+      <!-- Audio Reverb -->
+      <div class="component-box">
+        <audio-reverb preset="hall"></audio-reverb>
+      </div>
+
+      <!-- Audio WAM Effect (integrated default, user can replace URL in UI) -->
+      <div class="component-box">
+        <audio-wam-effect
+          src="./assets/wam/basic-drive-wam.js"
+          mix="0.8"
+        ></audio-wam-effect>
+      </div>
+    </div>
+    
+    <!-- Column 3: Monitoring -->
+    <div class="section">
+      <h2>📊 Monitoring</h2>
+      
+      <!-- Audio Visualizer -->
+      <div class="component-box">
+        <audio-visualizer mode="fft" fftsize="256"></audio-visualizer>
+      </div>
+    </div>
+    
+  </div>
+
+  <!-- ========== IMPORT ALL COMPONENTS ========== -->
+  <!--
+    Default mode uses local files from ./components so changes work without push.
+    Set USE_CDN=true and update CDN_BASE only when you want to test deployed assets.
+  -->
+  
+  <script type="module">
+    const USE_CDN = false;
+    const LOCAL_BASE = './components/';
+    const CDN_BASE = 'https://broback7.github.io/projet_web_component/components/';
+    const BASE = USE_CDN ? CDN_BASE : LOCAL_BASE;
+    
+    // Dynamically import all components
+    const components = [
+      'audio-bus.js',
+      'audio-player.js',
+      'audio-equalizer.js',
+      'audio-visualizer.js',
+      'audio-reverb.js',
+      'audio-wam-effect.js'
+    ];
+    
+    // Load each component
+    for (const file of components) {
+      import(BASE + file).catch(err => {
+        console.error(`Failed to load ${file}:`, err);
+      });
+    }
+  </script>
+
+</body>
+</html>

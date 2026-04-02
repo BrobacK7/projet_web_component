@@ -10,12 +10,10 @@ class AudioWorkspace extends HTMLElement {
   static get DEFAULT_MODULES() {
     return [
       { tag: 'audio-player',     label: 'Player',     icon: 'PLY', attrs: { src: './assets/demo/sonic.mp3', title: 'Sonic', artist: 'Demo' } },
-      { tag: 'audio-bus-diagram', label: 'Bus Graph',  icon: 'BUS' },
       { tag: 'audio-equalizer',  label: 'Equalizer',  icon: 'EQ'  },
       { tag: 'audio-visualizer', label: 'Visualizer', icon: 'VIZ', attrs: { mode: 'fft', fftsize: '256' } },
       { tag: 'audio-reverb',     label: 'Reverb',     icon: 'REV' },
-      { tag: 'audio-wam-effect', label: 'WAM Effect', icon: 'WAM', attrs: { mix: '1' } },
-      { tag: 'audio-playlist',   label: 'Playlist',   icon: 'PL'  },
+      { tag: 'audio-wam-effect', label: 'WAM Effect', icon: 'WAM', attrs: { src: './assets/wam/basic-drive-wam.js', mix: '1' } },
     ];
   }
 
@@ -473,13 +471,11 @@ class AudioWorkspace extends HTMLElement {
 
   _getInitialWindowSize(tag) {
     const sizes = {
-      'audio-player': { width: 390, height: 380 },
-      'audio-playlist': { width: 390, height: 380 },
+      'audio-player': { width: 430, height: 520 },
       'audio-equalizer': { width: 420, height: 360 },
       'audio-visualizer': { width: 420, height: 280 },
       'audio-reverb': { width: 390, height: 240 },
       'audio-wam-effect': { width: 420, height: 260 },
-      'audio-bus-diagram': { width: 430, height: 300 },
     };
     return sizes[tag] || { width: 390, height: 300 };
   }
