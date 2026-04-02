@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Example: Importing Audio Components</title>
+  <title>Audio Components Standalone Example</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
@@ -48,16 +48,6 @@
     .component-box--player {
       min-height: 520px;
     }
-    
-    .info {
-      background: #eef3fb;
-      border-left: 4px solid #2563eb;
-      padding: 12px;
-      border-radius: 4px;
-      font-size: 13px;
-      color: #1e40af;
-      margin-bottom: 16px;
-    }
   </style>
 </head>
 <body>
@@ -68,20 +58,14 @@
     <div class="section">
       <h2>🎵 Audio Playback</h2>
       
-      <!-- Audio Bus (required for all effects and visualization) -->
       <div class="component-box">
         <p style="color: #666; font-size: 12px; margin-bottom: 8px;">Shared Audio Context</p>
         <audio-bus></audio-bus>
       </div>
       
-      <!-- Audio Player -->
       <div class="component-box component-box--player">
-        <audio-player 
-          tracks='[
-            {"src":"./assets/demo/sonic.mp3","title":"Sonic","artist":"Demo Audio"},
-            {"src":"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3","title":"SoundHelix Song 2","artist":"SoundHelix"},
-            {"src":"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3","title":"SoundHelix Song 3","artist":"SoundHelix"}
-          ]'
+        <audio-player
+          tracks='[{"src":"https://YOUR_DOMAIN/path/to/your-track-1.mp3","title":"Your Track 1","artist":"Your Artist"},{"src":"https://YOUR_DOMAIN/path/to/your-track-2.mp3","title":"Your Track 2","artist":"Your Artist"}]'
           autoadvance="true"
         ></audio-player>
       </div>
@@ -91,21 +75,18 @@
     <div class="section">
       <h2>🎚️ Effects & Visualization</h2>
       
-      <!-- Audio Equalizer -->
       <div class="component-box">
         <audio-equalizer></audio-equalizer>
       </div>
       
-      <!-- Audio Reverb -->
       <div class="component-box">
         <audio-reverb preset="hall"></audio-reverb>
       </div>
 
-      <!-- Audio WAM Effect (integrated default, user can replace URL in UI) -->
       <div class="component-box">
         <audio-wam-effect
-          src="./assets/wam/basic-drive-wam.js"
-          mix="0.8"
+          src="https://YOUR_DOMAIN/path/to/your-wam-module.js"
+          mix="0.1"
         ></audio-wam-effect>
       </div>
     </div>
@@ -114,7 +95,6 @@
     <div class="section">
       <h2>📊 Monitoring</h2>
       
-      <!-- Audio Visualizer -->
       <div class="component-box">
         <audio-visualizer mode="fft" fftsize="256"></audio-visualizer>
       </div>
@@ -122,31 +102,20 @@
     
   </div>
 
-  <!-- ========== IMPORT ALL COMPONENTS ========== -->
-  <!--
-    Default mode uses local files from ./components so changes work without push.
-    Set USE_CDN=true and update CDN_BASE only when you want to test deployed assets.
-  -->
-  
   <script type="module">
-    const USE_CDN = false;
-    const LOCAL_BASE = './components/';
-    const CDN_BASE = 'https://broback7.github.io/projet_web_component/components/';
-    const BASE = USE_CDN ? CDN_BASE : LOCAL_BASE;
-    
-    // Dynamically import all components
-    const components = [
+    const COMPONENTS_BASE = 'https://YOUR_COMPONENTS_HOST/components/';
+
+    const componentFiles = [
       'audio-bus.js',
       'audio-player.js',
       'audio-equalizer.js',
       'audio-visualizer.js',
       'audio-reverb.js',
-      'audio-wam-effect.js'
+      'audio-wam-effect.js',
     ];
-    
-    // Load each component
-    for (const file of components) {
-      import(BASE + file).catch(err => {
+
+    for (const file of componentFiles) {
+      import(COMPONENTS_BASE + file).catch((err) => {
         console.error(`Failed to load ${file}:`, err);
       });
     }

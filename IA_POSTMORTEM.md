@@ -91,9 +91,3 @@ Aucune regle outillee additionnelle (lint custom, style guide externe, prompt fi
 - demander de petites unites de code, puis iterer
 - verifier chaque composant en isolation
 - documenter l'API au fur et a mesure, pas en fin de projet
-
-## 9. Actions restantes recommandees
-
-- ajouter un composant effet WAM (optionnel mais aligne sujet)
-- preparer un mini projet consommateur separe des composants
-- enregistrer une video de demo avec focus decisions d'architecture

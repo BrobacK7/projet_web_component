@@ -58,32 +58,29 @@ L'utilisateur peut saisir une autre URL ESM dans son champ `src` et cliquer sur 
 
 Exemple complet de demo: voir index.html.
 
-## Etat d'avancement
-
-Fonctionnel:
-- Audio bus partage
-- Player, playlist, EQ, visualiseur (fft/wave/volume), reverb, workspace
-- Communication inter-composants par events
-
-A completer pour le rendu final:
-- Support d'au moins un effet WAM optionnel
-- Eventuel projet consommateur separe (repo ou dossier dedie)
-- Video de demonstration YouTube
-
 ## Documentation technique
 
 - Specification API detaillee: voir SPECIFICATION.md
 - Post-mortem IA (outils, prompts, contraintes): voir IA_POSTMORTEM.md
 
+## Guide API (consommation externe)
+
+Si la page de demo est hebergee sur un autre GitHub Pages que celui des composants:
+- importer les composants avec des URLs absolues vers VOTRE host de distribution des composants
+- fournir vos propres URLs absolues pour les medias (`src`/`tracks`)
+- pour `audio-wam-effect`, fournir explicitement un `src` absolu vers votre module WAM
+
+Important:
+- le lecteur n'embarque pas de catalogue audio; l'utilisateur final doit declarer ses musiques dans `src` ou `tracks`
+- `audio-wam-effect` ne charge rien par defaut si `src` n'est pas renseigne
+
+Reference recommandee:
+- voir EXAMPLE_IMPORT.html pour un exemple HTML autonome pret a heberger seul
+
 ## Hebergement
 
 Le projet est prevu pour GitHub Pages (workflow present dans .github/workflows/jekyll-gh-pages.yml).
 
-Verifier avant rendu:
-1. URL publique des composants (charges via balises script module)
-2. URL publique du projet de demo
-3. Accessibilite des assets audio distants
+## Auteur
 
-## Auteurs
-
-Binome MIAGE M2 - Dev Web 2025-2026.
+Simon RIGAL MIAGE M2 - Dev Web 2025-2026.

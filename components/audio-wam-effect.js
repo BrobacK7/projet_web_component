@@ -14,8 +14,6 @@
  */
 
 class AudioWamEffect extends HTMLElement {
-  static DEFAULT_WAM_SRC = './assets/wam/basic-drive-wam.js';
-
   static get observedAttributes() {
     return ['src', 'mix', 'bypass'];
   }
@@ -84,10 +82,15 @@ class AudioWamEffect extends HTMLElement {
     if (this._ready || this._loading) return;
 
     const bus = window.AudioBus;
-    const src = this.getAttribute('src') || AudioWamEffect.DEFAULT_WAM_SRC;
+    const src = this.getAttribute('src');
 
     if (!bus?.context || !bus?.connectEffect || !bus?.disconnectEffect) {
       this._setStatus('Waiting for AudioBus...');
+      return;
+    }
+
+    if (!src) {
+      this._setStatus('Set a WAM module URL in src.');
       return;
     }
 
@@ -254,7 +257,7 @@ class AudioWamEffect extends HTMLElement {
 
   _syncSrcUI() {
     const input = this.shadowRoot.getElementById('srcInput');
-    if (input) input.value = this.getAttribute('src') || AudioWamEffect.DEFAULT_WAM_SRC;
+    if (input) input.value = this.getAttribute('src') || '';
   }
 
   _syncMixUI() {

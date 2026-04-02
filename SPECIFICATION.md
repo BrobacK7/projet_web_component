@@ -4,6 +4,17 @@ Ce document decrit l'API de chaque composant et la facon dont les composants com
 
 ## 1. Principes d'architecture
 
+### 1.0 Guide d'integration externe (GitHub Pages separe)
+
+Quand une page consommatrice est hebergee dans un autre repository/site:
+- importer les modules depuis votre URL publique de distribution des composants
+- passer des URLs absolues pour les pistes audio (`src` et `tracks[].src`)
+- passer une URL absolue pour `audio-wam-effect[src]`
+
+Pourquoi:
+- les chemins relatifs (`./assets/...`) sont resolus depuis le site consommateur, pas depuis le repository des composants
+- cela evite les erreurs 404 et les echecs de chargement induits par des assets non presents localement
+
 ### 1.1 Couplage faible
 
 Les composants communiquent principalement via:
